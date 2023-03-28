@@ -1,0 +1,108 @@
+.popup_form label { display: block; float: left; width: 130px; }
+.popup_form input[type="text"] {
+    padding: 4px 8px;
+    background: #f0f0f0;
+    border: 1px solid #ccc;
+}
+
+.popup {
+    width:100%;
+    height:100%;
+    display:none;
+    position:fixed;
+    top:0px;
+    left:0px;
+    background:rgba(0,0,0,0.90);
+	z-index:9999;
+}
+
+.popup img{
+    margin:auto;
+}
+
+/* Inner */
+.popup-inner {
+    max-width:700px;
+    width:90%;
+    padding:70px;
+    position:absolute;
+    top:50%;
+    left:50%;
+    -webkit-transform:translate(-50%, -50%);
+    transform:translate(-50%, -50%);    
+    background: #4572BE;
+	color: #fff;
+}
+.popup-inner h1{
+	margin-top:0px;
+}
+#pincode_login_form {
+	padding-top: 15px;
+}
+#pincode_login_form label{
+}
+
+#login-error-window {
+	display: none;
+	color: #fff;
+	margin-top: 5px;
+    max-width: 467px;
+    margin-left: auto;
+    margin-right: auto;
+}
+.success-window {
+    color: #4F8A10;
+    background-color: #DFF2BF;
+}
+.error-window{
+    color: #D8000C;
+    background-color: #FFBABA;
+            
+}
+.pincode-box {
+	width: 400px;
+	margin-bottom: 10px;
+	color: #303133;
+}
+.btn-access {	
+	background: #fff;
+	color: #303133;
+	border: none;
+	border-color: #fff;
+	margin-top: 10px !important;
+}
+.overflow-hidden{
+	overflow: hidden !important;
+}
+
+.popup-inline{
+    display: flex;
+    justify-content: center;
+    margin-top:10px;
+}
+
+.popup-inline .btn{
+    padding: 10px 13px 12px !important;
+    margin: 10px;
+    line-height: 100%;
+    font-size: 18px;
+    min-height: 41px;
+}
+
+@media (max-width:569px){
+    .popup-inline .btn {
+        transform: scale(1) !important;
+    }
+
+}
+
+.popup-text-wrapper{
+    display: flex;
+}
+.popup-text {
+    width: 463px;
+    display: block;
+    margin: 0 auto;
+    line-height: normal;
+    font-size: 16px;
+}
