@@ -6,7 +6,7 @@
 
  *	Description: An easy to use pin code plugin to access the full site.
 
- *	Version: 1.3
+ *	Version: 2.1.2
  */
 
 if ( ! defined( 'ABSPATH' ) ) {
@@ -38,4 +38,3 @@ add_filter( 'plugin_action_links_' . plugin_basename( __FILE__ ), 'pin_code_plug
  */
 require_once plugin_dir_path( __FILE__ ) . 'includes/pincode-login-class.php';
 $pincode_obj = new Pincode_Login();
-
