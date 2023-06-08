@@ -16,29 +16,119 @@
 	z-index:9999;
 }
 
-.popup img{
-    margin:auto;
+.popup img {
+    display: block;
+    height: auto;
+    margin: 0 auto 80px;
+    max-width: 300px;
+    width: 100%;
 }
 
 /* Inner */
 .popup-inner {
-    max-width:700px;
-    width:90%;
-    padding:70px;
-    position:absolute;
-    top:50%;
-    left:50%;
-    -webkit-transform:translate(-50%, -50%);
-    transform:translate(-50%, -50%);    
+    align-items: center;
     background: #4572BE;
-	color: #fff;
+    border: 10px solid #fff;
+    border-radius: 5px;
+    color: #fff;
+    display: flex;
+    flex-direction: column;
+    justify-content: center;
+    left: 50%;
+    min-height: 75vh;
+    min-width: 75vw;
+    padding: 50px;
+    position: absolute;
+    top: 50%;
+    -webkit-transform: translate(-50%, -50%);
+    transform: translate(-50%, -50%);
+    width: auto;
 }
+
 .popup-inner h1{
-	margin-top:0px;
+    font-size: 80px !important;
+    line-height: 1.25;
+    margin: 0 0 35px;
+    text-align: center;
 }
+
+.popup-inner .information-text {
+    font-size: 35px;
+    font-weight: 400;
+    line-height: 1.25;
+    margin: 0 0 20px;
+    text-align: center;
+}
+
+.popup-inner .disclaimer-text {
+    font-size: 12px;
+    font-weight: 400;
+    line-height: 1.25;
+    margin: 40px 0 0;
+    text-align: center;
+}
+
+@media (max-width: 1200px) {
+    .popup img {
+        margin: 0 auto 50px;
+        max-width: 250px;
+    }
+    .popup-inner h1 {
+        font-size: 50px !important;
+    }
+    .popup-inner .information-text {
+        font-size: 25px;
+    }
+}
+
+@media (max-width: 1024px) {
+    .popup-inner .information-text {
+        font-size: 20px;
+    }
+}
+
+@media (max-width: 768px) {
+    .popup-inner {
+        min-height: calc(100% - 20px);
+        min-width: calc(100% - 20px);
+        padding: 30px;
+    }
+    .popup img {
+        margin: 0 auto 30px;
+        max-width: 200px;
+    }
+    .popup-inner h1 {
+        font-size: 30px !important;
+        margin: 0 0 20px;
+    }
+    .popup-inner .information-text {
+        font-size: 18px;
+        margin: 0;
+    }
+    #pincode_login_form {
+        padding-top: 0;
+    }
+    .popup-inner .disclaimer-text {
+        margin: 10px 0 0;
+    }
+}
+
+@media (max-width: 480px) {
+    .popup-inner {
+        border: 5px solid #fff;
+        border-radius: 0;
+        min-height: 0;
+    }
+    #pincode_login_form .pincode-box {
+        flex: 1;
+        width: auto;
+    }
+}
+
 #pincode_login_form {
 	padding-top: 15px;
 }
+
 #pincode_login_form label{
 }
 

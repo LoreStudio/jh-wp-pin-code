@@ -34,7 +34,7 @@ if ( !class_exists( 'Pincode_Login' ) ) {
 			if( ! is_admin ( ) ) {
 				wp_enqueue_script( 'jquery' );
 				wp_enqueue_style( 'pincode-login-style',  PINCODE_DIR_URI. 'assets/css/pincode-style.css', array(), '1.0.0', 'all' );				
-				wp_enqueue_script( "pincode-login-js", PINCODE_DIR_URI . 'assets/js/pincode-login.js', array(), '1.0.0', false );
+				wp_enqueue_script( "pincode-login-js", PINCODE_DIR_URI . 'assets/js/pincode-login.js', array('jquery'), '1.0.0', false );
 	
 				// define some local variable
 				$local_variables = [
@@ -101,11 +101,11 @@ if ( !class_exists( 'Pincode_Login' ) ) {
 			if ($is_protected && !is_user_logged_in() && !is_admin()) {
                 ?>
                 <script>
-                    jQuery( function( $ ) {	
+                    ( function( $ ) {	
                         $("body").addClass('overflow-hidden');
 						$('.menu-item-link a').attr("onclick","return false");
 						$('.menu-item-link a').attr("href","#");
-                    });
+                    })(jQuery);
                 </script>  
                 <?php
                 $output = $this->show_login_popup_window();
@@ -119,6 +119,9 @@ if ( !class_exists( 'Pincode_Login' ) ) {
 			$background_color = get_option( 'popup_background_color' ) ? esc_attr( get_option( 'popup_background_color' ) ) : false;
 			$background_style = $background_color ? 'style="background-color:' . $background_color . '"' : false;
 			$popup_text = get_option( 'popup_text' ) ? get_option( 'popup_text' ) : false;
+			$popup_study_name = get_option( 'popup_study_name' ) ? get_option( 'popup_study_name' ) : '';
+			$popup_information_text = get_option( 'popup_information_text' ) ? get_option( 'popup_information_text' ) : '';
+			$popup_disclaimer_text = get_option( 'popup_disclaimer_text' ) ? get_option( 'popup_disclaimer_text' ) : '';
         ?>       
             <div style="display:block;" class="popup" data-popup="popup-1" id="popup">
                 <div class="popup-inner" <?php if ( $background_style ) { echo $background_style; } ?>>
@@ -132,6 +135,12 @@ if ( !class_exists( 'Pincode_Login' ) ) {
 							</p>
 						</div>
 					<?php endif ?>
+					<?php if( !empty($popup_study_name)){?>
+						<h1 class="study-name"><?php esc_html_e( $popup_study_name );?></h1>
+					<?php }?>
+					<?php if( !empty($popup_information_text)){?>
+						<p class="information-text"><?php  esc_html_e($popup_information_text);?></p>
+					<?php }?>
                     <form id="pincode_login_form" action="" method="POST">
                         <input type="hidden" id="redirect_to" name="redirect_to" value="<?php echo site_url ( $_SERVER['REQUEST_URI'] ); ?>" />
                         <input type="hidden" name="action" value="pincode_verify_login">
@@ -143,6 +152,9 @@ if ( !class_exists( 'Pincode_Login' ) ) {
 						<div class="login_errors" id="login-error-window">
 						</div>
                     </form>
+                    <?php if( !empty($popup_disclaimer_text)){?>
+						<p class="disclaimer-text"><?php esc_html_e( $popup_disclaimer_text);?></p>
+					<?php }?>
                 </div>
             </div>
         <?php

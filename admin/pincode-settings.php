@@ -40,6 +40,10 @@
 			update_option( 'popup_background_color', 	$_POST['popup_background_color'] );
 			update_option( 'popup_text', 				$_POST['popup_text'] );
 			update_option( 'popup_logo_url', 			$_POST['popup_img_src'] );
+
+			update_option( 'popup_study_name', 			$_POST['popup_study_name'] );
+			update_option( 'popup_information_text', 	$_POST['popup_information_text'] );
+			update_option( 'popup_disclaimer_text', 	$_POST['popup_disclaimer_text'] );
 		}
 	}
 
@@ -156,6 +160,43 @@
 								</option>
 							<?php endfor; ?>
 						</select>   
+					</td>                       
+				</tr>
+
+				<tr>
+					<th scope="row">
+						<label for="study_name">
+							Study name
+						</label>
+					</th>
+					<td>
+						<?php $popup_study_name = get_option( 'popup_study_name' ) ? esc_attr ( get_option( 'popup_study_name' ) ) : '' ?>
+						<input type="text" name="popup_study_name" value="<?php echo $popup_study_name; ?>" style="width: 400px;">
+						
+					</td>                       
+				</tr>
+				<tr>
+					<th scope="row">
+						<label for="information_text">
+							Information text
+						</label>
+					</th>
+					<td>
+				<?php $popup_information_text = get_option( 'popup_information_text' ) ? esc_attr ( get_option( 'popup_information_text' ) ) : '' ?>
+						<input type="text" name="popup_information_text" value="<?php echo $popup_information_text; ?>" style="width: 400px;">
+						
+					</td>                       
+				</tr>
+				<tr>
+					<th scope="row">
+						<label for="disclaimer_text">
+							Disclaimer text
+						</label>
+					</th>
+					<td>
+						<?php $popup_disclaimer_text = get_option( 'popup_disclaimer_text' ) ? esc_attr ( get_option( 'popup_disclaimer_text' ) ) : '' ?>
+						<input type="text" name="popup_disclaimer_text" value="<?php echo $popup_disclaimer_text; ?>" style="width: 400px;">
+						
 					</td>                       
 				</tr>
 				<tr>

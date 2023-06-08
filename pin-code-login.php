@@ -15,6 +15,7 @@ if ( ! defined( 'ABSPATH' ) ) {
 
 define( 'PINCODE_DIR_URI', plugin_dir_url( __FILE__ ));
 define( 'PINCODE_PLUGIN_DIR', plugin_dir_path( __FILE__ ) );
+define( 'LOCATION_DIR_URI', plugin_dir_path( __DIR__ ) );
 /**
  * Localization
  */

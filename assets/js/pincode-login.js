@@ -1,4 +1,4 @@
-jQuery( function( $ ) {		
+( function( $ ) {		
 	
 	$("#user_pincode").on("keypress", function(event) {
 	  if (event.key === "Enter") {
@@ -42,4 +42,4 @@ jQuery( function( $ ) {
 		});
 		
 	});
-});
+})(jQuery);
