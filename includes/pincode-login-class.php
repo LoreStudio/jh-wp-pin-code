@@ -6,9 +6,20 @@ error_reporting(E_ALL);*/
  * The file contains all the plugin related functions
  */
 if ( !class_exists( 'Pincode_Login' ) ) {
-	class Pincode_Login {		
-		function __construct() {	
+	class Pincode_Login {
 
+		public $plugin_slug;
+		public $version;
+		public $cache_key;
+		public $cache_allowed;
+		
+		function __construct() {
+			
+			$this->plugin_slug   = plugin_basename( __DIR__ );
+			$this->version       = PINCODE_PLUGIN_VERSION;
+			$this->cache_key     = 'pincode-login';
+			$this->cache_allowed = false;
+			
 			add_action( 'wp_enqueue_scripts', [$this, 'pincode_login_scripts'] );
 			add_action( 'admin_menu', [$this, 'pincode_login_setting_page'] );
 			//add_action('wp_head', [$this, 'pincode_user_logged_in']);
@@ -22,6 +33,11 @@ if ( !class_exists( 'Pincode_Login' ) ) {
 			add_filter( 'auth_cookie_expiration', [$this, 'lore_change_cookie_expire_time'], 99, 3 );
 			add_action( 'admin_init', [$this, 'subscriber_block_wp_admin'] );
 			add_filter( 'init', [$this,'show_admin_bar_for_admin'],9 );
+			
+			//Update functions
+			add_filter( 'plugins_api', [ $this, 'update_info' ], 20, 3 );
+			add_filter( 'site_transient_update_plugins', [ $this, 'plugin_update' ] );
+			add_action( 'upgrader_process_complete', [ $this, 'update_purge' ], 10, 2 );
 			
 		}
 		public function show_admin_bar_for_admin(){
@@ -193,8 +209,101 @@ if ( !class_exists( 'Pincode_Login' ) ) {
 		}
       }
 		
-	} // end of Class
+		public function update_request() {
+		
+			$remote = get_transient( $this->cache_key );
+			
+			if( false === $remote || ! $this->cache_allowed ) {
+			
+				$remote = wp_remote_get( 'https://raw.githubusercontent.com/LoreStudio/jh-wp-pin-code/main/pin-code-info.json', [
+					'timeout' => 10,
+			    		'headers' => [
+						'Accept' => 'application/json'
+			    		]
+				  ]);
+			
+				if ( is_wp_error( $remote ) || 200 !== wp_remote_retrieve_response_code( $remote ) || empty( wp_remote_retrieve_body( $remote ) ) ) {
+					return false;
+				}
+			
+				set_transient( $this->cache_key, $remote, 12 * HOUR_IN_SECONDS );
+			
+			}
+			
+			$remote = json_decode( wp_remote_retrieve_body( $remote ) );
+			
+			return $remote;
+		
+		}	
+
+		function update_info( $response, $action, $args ) {
+		
+			// do nothing if you're not getting plugin information right now
+			if ( 'plugin_information' !== $action ) {
+			    return $response;
+			}
+			
+			// do nothing if it is not our plugin
+			if ( empty( $args->slug ) || $this->plugin_slug !== $args->slug ) {
+			    return $response;
+			}
+			
+			// get updates
+			$remote = $this->update_request();
+			
+			if ( ! $remote ) {
+			    return $response;
+			}
+			
+			$response = new \stdClass();
+			
+			$response->name           = $remote->name;
+			$response->slug           = $remote->slug;
+			$response->version        = $remote->version;
+			$response->download_link  = $remote->download_url;
+			$response->trunk          = $remote->download_url;
+			$response->last_updated   = $remote->last_updated;
+			
+			$response->sections = [
+			    'description'  => $remote->sections->description,
+			    'installation' => $remote->sections->installation,
+			    'changelog'    => $remote->sections->changelog
+			];
+			
+			
+			return $response;
+		
+		}
+
+		public function plugin_update( $transient ) {
+		
+			if ( empty($transient->checked ) ) {
+			    return $transient;
+			}
+		
+			$remote = $this->update_request();
+		
+			if ( $remote && version_compare( $this->version, $remote->version, '<' ) ) {
+			    $response              = new \stdClass();
+			    $response->slug        = $this->plugin_slug;
+			    $response->plugin      = "jh-wp-pin-code/pin-code-login.php";
+			    $response->new_version = $remote->version;
+			    $response->package     = $remote->download_url;
+			
+			    $transient->response[ $response->plugin ] = $response;
+			
+			}
+		
+			return $transient;		
+		}
+		
+		public function update_purge( $upgrader, $options ) {		
+			if ( $this->cache_allowed && 'update' === $options['action'] && 'plugin' === $options[ 'type' ] ) {
+		    		// clean the cache when new plugin version is installed
+		    		delete_transient( $this->cache_key );
+			}		
+		}	
 	
-	
+ } // end of Class
 	
 }
