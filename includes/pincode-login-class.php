@@ -215,7 +215,7 @@ if ( !class_exists( 'Pincode_Login' ) ) {
 			
 			if( false === $remote || ! $this->cache_allowed ) {
 			
-				$remote = wp_remote_get( 'https://raw.githubusercontent.com/LoreStudio/jh-wp-pin-code/feature-plugin-update/pin-code-info.json', [
+				$remote = wp_remote_get( 'https://raw.githubusercontent.com/LoreStudio/jh-wp-pin-code/main/pin-code-info.json', [
 					'timeout' => 10,
 			    		'headers' => [
 						'Accept' => 'application/json'
