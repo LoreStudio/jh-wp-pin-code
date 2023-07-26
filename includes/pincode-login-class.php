@@ -286,7 +286,7 @@ if ( !class_exists( 'Pincode_Login' ) ) {
 			if ( $remote && version_compare( $this->version, $remote->version, '<' ) ) {
 			    $response              = new \stdClass();
 			    $response->slug        = $this->plugin_slug;
-			    $response->plugin      = "jh-wp-pin-code/pin-code-login.php";
+			    $response->plugin      = "jh-wp-pin-code-main/pin-code-login.php";
 			    $response->new_version = $remote->version;
 			    $response->package     = $remote->download_url;
 			
