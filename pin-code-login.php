@@ -13,7 +13,7 @@ if ( ! defined( 'ABSPATH' ) ) {
 	exit;
 }
 
-define( 'PINCODE_PLUGIN_VERSION', '2.2' );
+define( 'PINCODE_PLUGIN_VERSION', '2.3' );
 define( 'PINCODE_DIR_URI', plugin_dir_url( __FILE__ ));
 define( 'PINCODE_PLUGIN_DIR', plugin_dir_path( __FILE__ ) );
 define( 'LOCATION_DIR_URI', plugin_dir_path( __DIR__ ) );
