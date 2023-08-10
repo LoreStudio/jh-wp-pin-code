@@ -55,7 +55,7 @@ if ( !class_exists( 'Pincode_Login' ) ) {
 				// define some local variable
 				$local_variables = [
 					'ajax_url'	=> admin_url( 'admin-ajax.php' ),
-					'img_dir'	=> LOCATION_DIR_URI.'assets/images/',
+					'img_dir'	=> PINCODE_DIR_URI.'assets/images/',
 				];
 				wp_localize_script( 'pincode-login-js', 'pincode_object', $local_variables );	
 			}
