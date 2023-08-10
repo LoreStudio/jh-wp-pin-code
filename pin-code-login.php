@@ -6,17 +6,17 @@
 
  *	Description: An easy to use pin code plugin to access the full site.
 
- *	Version: 2.3
+ *	Version: 2.4
  */
 
 if ( ! defined( 'ABSPATH' ) ) {
 	exit;
 }
 
-define( 'PINCODE_PLUGIN_VERSION', '2.3' );
+define( 'PINCODE_PLUGIN_VERSION', '2.4' );
 define( 'PINCODE_DIR_URI', plugin_dir_url( __FILE__ ));
 define( 'PINCODE_PLUGIN_DIR', plugin_dir_path( __FILE__ ) );
-define( 'LOCATION_DIR_URI', plugin_dir_path( __DIR__ ) );
+
 /**
  * Localization
  */
