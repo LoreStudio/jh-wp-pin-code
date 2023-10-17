@@ -1,7 +1,7 @@
 ( function( $ ) {		
 	
 	$("#user_pincode").on("keypress", function(event) {
-	  if (event.key === "Enter") {
+	  if (event.key === "Enter" || event.which == 13) {
 	    event.preventDefault();
 	    $("#login_submit_btn").trigger('click');
 	  }
