@@ -50,7 +50,7 @@ if ( !class_exists( 'Pincode_Login' ) ) {
 			if( ! is_admin ( ) ) {
 				wp_enqueue_script( 'jquery' );
 				wp_enqueue_style( 'pincode-login-style',  PINCODE_DIR_URI. 'assets/css/pincode-style.css', array(), '1.0.0', 'all' );				
-				wp_enqueue_script( "pincode-login-js", PINCODE_DIR_URI . 'assets/js/pincode-login.js', array('jquery'), '1.0.0', false );
+				wp_enqueue_script( "pincode-login-js", PINCODE_DIR_URI . 'assets/js/pincode-login.js', array('jquery'), '1.0.4', true );
 	
 				// define some local variable
 				$local_variables = [
