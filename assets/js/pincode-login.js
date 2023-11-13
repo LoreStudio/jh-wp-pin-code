@@ -28,6 +28,13 @@
                 },
 		}).done(function (response) { //
 			if('success' === response.status){
+
+				window.dataLayer = window.dataLayer || [];
+
+				dataLayer.push({
+				"event": "sign_in_submit"
+				});
+
 				window.location.href = redirect_to;
 				return;
 			}else{
