@@ -213,7 +213,9 @@ if ( !class_exists( 'Pincode_Login' ) ) {
 		
 			$remote = get_transient( $this->cache_key );
 			
-			if( false === $remote || ! $this->cache_allowed ) {
+			if( false === $remote ) {
+
+				error_log('pin code - update_request');
 			
 				$remote = wp_remote_get( 'https://raw.githubusercontent.com/LoreStudio/jh-wp-pin-code/main/pin-code-info.json', [
 					'timeout' => 10,
@@ -226,7 +228,7 @@ if ( !class_exists( 'Pincode_Login' ) ) {
 					return false;
 				}
 			
-				set_transient( $this->cache_key, $remote, 12 * HOUR_IN_SECONDS );
+				set_transient( $this->cache_key, $remote, 120 );
 			
 			}
 			
