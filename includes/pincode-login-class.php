@@ -391,18 +391,24 @@ if ( !class_exists( 'Pincode_Login' ) ) {
 					// wp_set_current_user($user->ID);
 					wp_set_auth_cookie($user->ID, 1);
 
+					// Set cookie for pincode for 2 hours - t1dclinicaltrial.com
+					if ( strpos( $_POST['redirect_to'], 't1dclinicaltrial.com' ) != false ) {
+						setcookie( 'pincode', $pincode, time() + ( 2 * 60 * 60 ), '/' );
+						setcookie( 'pincode_redirect_to', $_POST['redirect_to'], time() + ( 2 * 60 * 60 ), '/' );
+					}
+
 					wp_send_json(
 						array(
 							'status' => 'success',
 							'message' => __('Successfully Logged in'),
-							'redirect_to' => $_POST['redirect_to']
+							'redirect_to' => $t1d_pins != false ?  $t1d_pins : $_POST['redirect_to']
 						)
 					);
 
 					return;
 				}
 
-				// Set cookie for pincode for 2 hours.
+				// Set cookie for pincode for 2 hours - t1dclinicaltrial.com
 				if ( strpos( $_POST['redirect_to'], 't1dclinicaltrial.com' ) != false ) {
 					setcookie( 'pincode', $pincode, time() + ( 2 * 60 * 60 ), '/' );
 					setcookie( 'pincode_redirect_to', $_POST['redirect_to'], time() + ( 2 * 60 * 60 ), '/' );
