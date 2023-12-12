@@ -35,7 +35,9 @@
 				"event": "sign_in_submit"
 				});
 
-				window.location.href = redirect_to;
+				// console.log('redirect_to', response.redirect_to);
+
+				window.location.href = response.redirect_to;
 				return;
 			}else{
 				$that.removeClass('verifying');

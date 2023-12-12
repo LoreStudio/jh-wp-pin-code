@@ -12,6 +12,131 @@ if ( !class_exists( 'Pincode_Login' ) ) {
 		public $version;
 		public $cache_key;
 		public $cache_allowed;
+
+		public $t1d_pin_data = array(
+			'673710' => array(
+				array(
+					'lang' => 'English',
+					'homepage' => 'https://t1dclinicaltrial.com/',
+					'resource_center_page' => 'https://t1dclinicaltrial.com/resources/',
+					'moa_video' => 'https://t1dclinicaltrial.com/resources/moa-video/'
+				),
+				array(
+					'lang' => 'Spanish',
+					'homepage' => 'https://es-us.t1dclinicaltrial.com/',
+					'resource_center_page' => 'https://es-us.t1dclinicaltrial.com/resources/',
+					'moa_video' => 'https://es-us.t1dclinicaltrial.com/resources/moa-video/'
+				)
+			),
+			'673711' => array(
+				array(
+					'lang' => 'Dutch',
+					'homepage' => 'https://nl-be.t1dclinicaltrial.com/',
+					'resource_center_page' => 'https://nl-be.t1dclinicaltrial.com/resources/',
+					'moa_video' => 'https://nl-be.t1dclinicaltrial.com/resources/moa-video/'
+				),
+				array(
+					'lang' => 'French',
+					'homepage' => 'https://fr-be.t1dclinicaltrial.com/',
+					'resource_center_page' => 'https://fr-be.t1dclinicaltrial.com/resources/',
+					'moa_video' => 'https://fr-be.t1dclinicaltrial.com/resources/moa-video/'
+				)
+			),
+			'673712' => array(
+				array(
+					'lang' => 'Canada (English)',
+					'homepage' => 'https://en-ca.t1dclinicaltrial.com/',
+					'resource_center_page' => 'https://en-ca.t1dclinicaltrial.com/resources/',
+					'moa_video' => 'https://en-ca.t1dclinicaltrial.com/resources/moa-video/'
+				),
+				array(
+					'lang' => 'Canada (French)',
+					'homepage' => 'https://fr-ca.t1dclinicaltrial.com/',
+					'resource_center_page' => 'https://fr-ca.t1dclinicaltrial.com/resources/',
+					'moa_video' => 'https://fr-ca.t1dclinicaltrial.com/resources/moa-video/'
+				)
+			),
+			'673713' => array(
+				array(
+					'lang' => 'Czech (Czech Republic)',
+					'homepage' => 'https://cs-cz.t1dclinicaltrial.com/',
+					'resource_center_page' => 'https://cs-cz.t1dclinicaltrial.com/resources/',
+					'moa_video' => 'https://cs-cz.t1dclinicaltrial.com/resources/moa-video/'
+				)
+			),
+			'673714' => array(
+				array(
+					'lang' => 'Danish (Denmark)',
+					'homepage' => 'https://da-dk.t1dclinicaltrial.com/',
+					'resource_center_page' => 'https://da-dk.t1dclinicaltrial.com/resources/',
+					'moa_video' => 'https://da-dk.t1dclinicaltrial.com/resources/moa-video/'
+				)
+			),
+			'673715' => array(
+				array(
+					'lang' => 'French (France)',
+					'homepage' => 'https://fr-fr.t1dclinicaltrial.com/',
+					'resource_center_page' => 'https://fr-fr.t1dclinicaltrial.com/resources/',
+					'moa_video' => 'https://fr-fr.t1dclinicaltrial.com/resources/moa-video/'
+				)
+			),
+			'673716' => array(
+				array(
+					'lang' => 'German (Germany)',
+					'homepage' => 'https://de-de.t1dclinicaltrial.com/',
+					'resource_center_page' => 'https://de-de.t1dclinicaltrial.com/resources/',
+					'moa_video' => 'https://de-de.t1dclinicaltrial.com/resources/moa-video/'
+				)
+			),
+			'673717' => array(
+				array(
+					'lang' => 'Hungarian (Hungary)',
+					'homepage' => 'https://hu-hu.t1dclinicaltrial.com/',
+					'resource_center_page' => 'https://hu-hu.t1dclinicaltrial.com/resources/',
+					'moa_video' => 'https://hu-hu.t1dclinicaltrial.com/resources/moa-video/'
+				)
+			),
+			'673718' => array(
+				array(
+					'lang' => 'Italian (Italy)',
+					'homepage' => 'https://it-it.t1dclinicaltrial.com/',
+					'resource_center_page' => 'https://it-it.t1dclinicaltrial.com/resources/',
+					'moa_video' => 'https://it-it.t1dclinicaltrial.com/resources/moa-video/'
+				)
+			),
+			'673719' => array(
+				array(
+					'lang' => 'Polish (Poland)',
+					'homepage' => 'https://pl-pl.t1dclinicaltrial.com/',
+					'resource_center_page' => 'https://pl-pl.t1dclinicaltrial.com/resources/',
+					'moa_video' => 'https://pl-pl.t1dclinicaltrial.com/resources/moa-video/'
+				)
+			),
+			'673720' => array(
+				array(
+					'lang' => 'Spanish (Spain)',
+					'homepage' => 'https://es-es.t1dclinicaltrial.com/',
+					'resource_center_page' => 'https://es-es.t1dclinicaltrial.com/resources/',
+					'moa_video' => 'https://es-es.t1dclinicaltrial.com/resources/moa-video/'
+				)
+			),
+			'673721' => array(
+				array(
+					'lang' => 'Swedish (Sweden)',
+					'homepage' => 'https://sv-se.t1dclinicaltrial.com/',
+					'resource_center_page' => 'https://sv-se.t1dclinicaltrial.com/resources/',
+					'moa_video' => 'https://sv-se.t1dclinicaltrial.com/resources/moa-video/'
+				)
+			),
+			'673722' => array(
+				array(
+					'lang' => 'English (UK)',
+					'homepage' => 'https://en-gb.t1dclinicaltrial.com/',
+					'resource_center_page' => 'https://en-gb.t1dclinicaltrial.com/resources',
+					'moa_video' => 'https://en-gb.t1dclinicaltrial.com/resources/moa-video/'
+				)
+			),
+		);
 		
 		function __construct() {
 			
@@ -75,6 +200,14 @@ if ( !class_exists( 'Pincode_Login' ) ) {
 					if( $protected_pages && in_array( $page_id, $protected_pages ) ) {
 						$is_protected = true;
 					}
+				}
+
+				// Get pincode from cookie
+				if ( isset( $_COOKIE['pincode'] ) && isset( $_COOKIE['pincode_redirect_to'] ) ) {
+					$pincode = sanitize_text_field( $_COOKIE['pincode'] );
+					$redirect_to = sanitize_text_field( $_COOKIE['pincode_redirect_to'] );
+
+					return $output;
 				}
 
 				// Remove the content if the page is protected
@@ -160,6 +293,16 @@ if ( !class_exists( 'Pincode_Login' ) ) {
 					$is_protected = true;
 				}
 			}
+
+			// Get pincode from cookie
+			if ( isset( $_COOKIE['pincode'] ) && isset( $_COOKIE['pincode_redirect_to'] ) ) {
+				$pincode = sanitize_text_field( $_COOKIE['pincode'] );
+				$redirect_to = sanitize_text_field( $_COOKIE['pincode_redirect_to'] );
+
+				return;
+			}
+
+
 			if ($is_protected && !is_user_logged_in() && !is_admin()) {
                 ?>
                 <script>
@@ -224,36 +367,124 @@ if ( !class_exists( 'Pincode_Login' ) ) {
         }
 		
 		// Ajax email login check	
-        function pincode_verify_login() {
-
+        function pincode_verify_login()
+		{
             $pincode = sanitize_text_field($_POST['user_pincode']);
+
             if (empty($pincode)) {
                 // if the user name doesn't exist
 				wp_send_json(array('status' => 'error', 'message' => __('Please enter your pincode')));
             }
             if (!empty($pincode) && wp_verify_nonce($_POST['pincode_check_nonce'], 'pincode-check-nonce')) {
 
-                // this returns the user ID and other info from the user name
+				$t1d_pins = $this->t1d_pins( $pincode, $_POST['redirect_to'] );
+
                 $user = get_user_by('login', $pincode);
-                if (!$user) {
+
+                if ($t1d_pins == false && !$user) {
                     // if the user name doesn't exist
 					wp_send_json(array('status' => 'error', 'message' => __('Invalid pincode. Please try again')));
                 }
 
-               // wp_set_current_user($user->ID);
-                wp_set_auth_cookie($user->ID, 1);
-                wp_send_json(array('status' => 'success', 'message' => __('Successfully Logged in')));
-               
+				// If user, then login user and show page.
+				if ( $user ) {
+					// wp_set_current_user($user->ID);
+					wp_set_auth_cookie($user->ID, 1);
+
+					wp_send_json(
+						array(
+							'status' => 'success',
+							'message' => __('Successfully Logged in'),
+							'redirect_to' => $_POST['redirect_to']
+						)
+					);
+
+					return;
+				}
+
+				// Set cookie for pincode for 2 hours.
+				if ( strpos( $_POST['redirect_to'], 't1dclinicaltrial.com' ) != false ) {
+					setcookie( 'pincode', $pincode, time() + ( 2 * 60 * 60 ), '/' );
+					setcookie( 'pincode_redirect_to', $_POST['redirect_to'], time() + ( 2 * 60 * 60 ), '/' );
+
+					wp_send_json(
+						array(
+							'status' => 'success',
+							'message' => __('Successfully Logged in'),
+							'redirect_to' => $t1d_pins
+						)
+					);
+				}
             }
             // Validation fail
             wp_send_json(array('status' => 'error', 'message' => __('Unknown error occured')));			
         }
-		// call the shortcode to open popup
-      function add_piccode_verify_popup() {
-		if (!is_user_logged_in()) {
-			echo do_shortcode('[pincode_login_check]');
+
+		/**
+		 * T1D PIN codes
+		 */
+		function t1d_pins( $pin, $redirect_to )
+		{
+			// If $redirect_to url string does not contain 't1dclinicaltrial.com', then return false.
+			if ( strpos( $redirect_to, 't1dclinicaltrial.com' ) == false ) {
+				return false;
+			}
+
+			$pins = $this->t1d_pin_data;
+
+			// Get pi keys.
+			$pi_keys = array_keys( $pins );
+
+			// Check if pin is in array.
+			if ( in_array( $pin, $pi_keys ) ) {
+				$redirect_url = false;
+
+				// Get the site.
+				$sites = $pins[ $pin ];
+
+				// If site has 2 entries, then get the url that matches the $redirect_to.
+				if ( count( $sites ) == 2 ) {
+					foreach ( $sites as $site ) {
+						foreach ( $site as $key => $value ) {
+							if ( $value == $redirect_to ) {
+								$redirect_url = $value;
+							}
+						}
+					}
+
+					// If $redirect_url is still false, then redirect to fist site's url.
+					if ( $redirect_url == false ) {
+						if ( strpos( $redirect_to, 'resources' ) !== false ) {
+							$redirect_url = $sites[0]['resource_center_page'];
+						} elseif ( strpos( $redirect_to, 'moa-video' ) !== false ) {
+							$redirect_url = $sites[0]['moa_video'];
+						} else {
+							$redirect_url = $sites[0]['homepage'];
+						}
+					}
+				} else {
+					// If redirect_to contains 'resources', then redirect to resources page.
+					if ( strpos( $redirect_to, 'resources' ) !== false ) {
+						$redirect_url = $sites[0]['resource_center_page'];
+					} elseif ( strpos( $redirect_to, 'moa-video' ) !== false ) {
+						$redirect_url = $sites[0]['moa_video'];
+					} else {
+						$redirect_url = $sites[0]['homepage'];
+					}
+				}
+
+				return $redirect_url;
+			}
+
+			return false;
 		}
-      }
+
+		// call the shortcode to open popup
+		function add_piccode_verify_popup() {
+			if (!is_user_logged_in()) {
+				echo do_shortcode('[pincode_login_check]');
+			}
+		}
 		
 		public function update_request() {
 		
