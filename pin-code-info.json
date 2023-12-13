@@ -1,7 +1,7 @@
 {
 	"name" : "PIN Code Login",
 	"slug" : "pincode-login",
-	"version" : "2.9",
+	"version" : "3.0",
 	"download_url" : "https://github.com/LoreStudio/jh-wp-pin-code/archive/refs/heads/main.zip",
 	"last_updated" : "2023-12-12 00:00:00",
 	"sections" : {

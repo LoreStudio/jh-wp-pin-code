@@ -203,9 +203,8 @@ if ( !class_exists( 'Pincode_Login' ) ) {
 				}
 
 				// Get pincode from cookie
-				if ( isset( $_COOKIE['pincode'] ) && isset( $_COOKIE['pincode_redirect_to'] ) ) {
+				if ( isset( $_COOKIE['pincode'] ) ) {
 					$pincode = sanitize_text_field( $_COOKIE['pincode'] );
-					$redirect_to = sanitize_text_field( $_COOKIE['pincode_redirect_to'] );
 
 					return $output;
 				}
@@ -295,10 +294,8 @@ if ( !class_exists( 'Pincode_Login' ) ) {
 			}
 
 			// Get pincode from cookie
-			if ( isset( $_COOKIE['pincode'] ) && isset( $_COOKIE['pincode_redirect_to'] ) ) {
+			if ( isset( $_COOKIE['pincode'] ) ) {
 				$pincode = sanitize_text_field( $_COOKIE['pincode'] );
-				$redirect_to = sanitize_text_field( $_COOKIE['pincode_redirect_to'] );
-
 				return;
 			}
 
@@ -393,8 +390,7 @@ if ( !class_exists( 'Pincode_Login' ) ) {
 
 					// Set cookie for pincode for 2 hours - t1dclinicaltrial.com
 					if ( strpos( $_POST['redirect_to'], 't1dclinicaltrial.com' ) != false ) {
-						setcookie( 'pincode', $pincode, time() + ( 2 * 60 * 60 ), '/' );
-						setcookie( 'pincode_redirect_to', $_POST['redirect_to'], time() + ( 2 * 60 * 60 ), '/' );
+						setcookie( 'pincode', $pincode, time() + ( 2 * 60 * 60 ), '/', '.t1dclinicaltrial.com' );
 					}
 
 					wp_send_json(
@@ -410,8 +406,7 @@ if ( !class_exists( 'Pincode_Login' ) ) {
 
 				// Set cookie for pincode for 2 hours - t1dclinicaltrial.com
 				if ( strpos( $_POST['redirect_to'], 't1dclinicaltrial.com' ) != false ) {
-					setcookie( 'pincode', $pincode, time() + ( 2 * 60 * 60 ), '/' );
-					setcookie( 'pincode_redirect_to', $_POST['redirect_to'], time() + ( 2 * 60 * 60 ), '/' );
+					setcookie( 'pincode', $pincode, time() + ( 2 * 60 * 60 ), '/', '.t1dclinicaltrial.com' );
 
 					wp_send_json(
 						array(

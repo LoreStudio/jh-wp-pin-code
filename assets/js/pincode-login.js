@@ -35,7 +35,7 @@
 				"event": "sign_in_submit"
 				});
 
-				// console.log('redirect_to', response.redirect_to);
+				return console.log('redirect_to', response.redirect_to);
 
 				window.location.href = response.redirect_to;
 				return;
