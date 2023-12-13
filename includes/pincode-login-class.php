@@ -188,13 +188,12 @@ if ( !class_exists( 'Pincode_Login' ) ) {
 				// Get current page id
 				$page_id = get_queried_object_id();
 
-				// Get pincode from cookie
-				if ( isset( $_GET['pin'] ) ) {
+				// Get pincode from cookie.
+				if ( isset( $_GET['pin'] ) && $this->is_valid_t1d_pin( $_GET['pin'] ) ) {
 					setcookie( 'pincode', $_GET['pin'], time() + ( 2 * 60 * 60 ), '/' );
 					
 					return $output;
 				}
-
 
 				$protected_type = esc_attr( get_option( 'site_protect_level' ) );
 
@@ -294,16 +293,16 @@ if ( !class_exists( 'Pincode_Login' ) ) {
 				}
 			}
 
-			// Get pincode from cookie
+			// Get pincode from cookie.
 			if ( isset( $_COOKIE['pincode'] ) ) {
 				$pincode = sanitize_text_field( $_COOKIE['pincode'] );
 				return;
 			}
 
-			if ( isset( $_GET['pin'] ) ) {
+			// Get pincode from url.
+			if ( isset( $_GET['pin'] ) && $this->is_valid_t1d_pin( $_GET['pin'] ) ) {
 				return;
 			}
-
 
 			if ($is_protected && !is_user_logged_in() && !is_admin()) {
                 ?>
@@ -438,7 +437,7 @@ if ( !class_exists( 'Pincode_Login' ) ) {
 
 			$pins = $this->t1d_pin_data;
 
-			// Get pi keys.
+			// Get pin keys.
 			$pi_keys = array_keys( $pins );
 
 			// Check if pin is in array.
@@ -480,6 +479,22 @@ if ( !class_exists( 'Pincode_Login' ) ) {
 				}
 
 				return $redirect_url;
+			}
+
+			return false;
+		}
+
+		/**
+		 * Check if pin is valid.
+		 */
+		function is_valid_t1d_pin( $pin )
+		{
+			// Get pin keys.
+			$pin_keys = array_keys( $this->t1d_pin_data );
+
+			// Check if pin is in array.
+			if ( in_array( $pin, $pin_keys ) ) {
+				return true;
 			}
 
 			return false;
