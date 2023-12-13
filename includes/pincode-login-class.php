@@ -188,6 +188,14 @@ if ( !class_exists( 'Pincode_Login' ) ) {
 				// Get current page id
 				$page_id = get_queried_object_id();
 
+				// Get pincode from cookie
+				if ( isset( $_GET['pin'] ) ) {
+					setcookie( 'pincode', $_GET['pin'], time() + ( 2 * 60 * 60 ), '/' );
+					
+					return $output;
+				}
+
+
 				$protected_type = esc_attr( get_option( 'site_protect_level' ) );
 
 				$is_protected = false;
@@ -200,13 +208,6 @@ if ( !class_exists( 'Pincode_Login' ) ) {
 					if( $protected_pages && in_array( $page_id, $protected_pages ) ) {
 						$is_protected = true;
 					}
-				}
-
-				// Get pincode from cookie
-				if ( isset( $_COOKIE['pincode'] ) ) {
-					$pincode = sanitize_text_field( $_COOKIE['pincode'] );
-
-					return $output;
 				}
 
 				// Remove the content if the page is protected
@@ -296,6 +297,10 @@ if ( !class_exists( 'Pincode_Login' ) ) {
 			// Get pincode from cookie
 			if ( isset( $_COOKIE['pincode'] ) ) {
 				$pincode = sanitize_text_field( $_COOKIE['pincode'] );
+				return;
+			}
+
+			if ( isset( $_GET['pin'] ) ) {
 				return;
 			}
 
@@ -390,14 +395,14 @@ if ( !class_exists( 'Pincode_Login' ) ) {
 
 					// Set cookie for pincode for 2 hours - t1dclinicaltrial.com
 					if ( strpos( $_POST['redirect_to'], 't1dclinicaltrial.com' ) != false ) {
-						setcookie( 'pincode', $pincode, time() + ( 2 * 60 * 60 ), '/', '.t1dclinicaltrial.com' );
+						setcookie( 'pincode', $pincode, time() + ( 2 * 60 * 60 ), '/' );
 					}
 
 					wp_send_json(
 						array(
 							'status' => 'success',
 							'message' => __('Successfully Logged in'),
-							'redirect_to' => $t1d_pins != false ?  $t1d_pins : $_POST['redirect_to']
+							'redirect_to' => $t1d_pins != false ?  $t1d_pins . '?pin=' . $pincode : $_POST['redirect_to']
 						)
 					);
 
@@ -406,13 +411,13 @@ if ( !class_exists( 'Pincode_Login' ) ) {
 
 				// Set cookie for pincode for 2 hours - t1dclinicaltrial.com
 				if ( strpos( $_POST['redirect_to'], 't1dclinicaltrial.com' ) != false ) {
-					setcookie( 'pincode', $pincode, time() + ( 2 * 60 * 60 ), '/', '.t1dclinicaltrial.com' );
+					setcookie( 'pincode', $pincode, time() + ( 2 * 60 * 60 ), '/' );
 
 					wp_send_json(
 						array(
 							'status' => 'success',
 							'message' => __('Successfully Logged in'),
-							'redirect_to' => $t1d_pins
+							'redirect_to' => $t1d_pins . '?pin=' . $pincode
 						)
 					);
 				}
