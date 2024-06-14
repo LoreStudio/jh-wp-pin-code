@@ -7,6 +7,6 @@
 	"sections" : {
 		"description" : "An easy to use pin code plugin to access the full site.",
 		"installation" : "Install zip file and click activate",
-		"changelog" : "<h4>2.8 Added translation-specific pin redirect for t1dclinicaltrial.com</h4><h4>2.7 Resolved bug where update checks were being triggered on each page refresh</h4><h4>2.6 Add a sign-in event after a successful pin code submission</h4><h4>2.5 Resolved a bug where the Enter button wouldn't submit the PIN code form</h4><h4>2.4 Fixes conflict with Store Location Plugin</h4><h4>v2.2 released on July 26th, 2023</h4><ul><li>Add automatic updater</li></ul>"
+		"changelog" : "<h4>2.8 Added translation-specific pin redirect</h4><h4>2.7 Resolved bug where update checks were being triggered on each page refresh</h4><h4>2.6 Add a sign-in event after a successful pin code submission</h4><h4>2.5 Resolved a bug where the Enter button wouldn't submit the PIN code form</h4><h4>2.4 Fixes conflict with Store Location Plugin</h4><h4>v2.2 released on July 26th, 2023</h4><ul><li>Add automatic updater</li></ul>"
 	}
 }
