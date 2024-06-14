@@ -1,9 +1,9 @@
 {
 	"name" : "PIN Code Login",
 	"slug" : "pincode-login",
-	"version" : "3.2",
+	"version" : "3.3",
 	"download_url" : "https://github.com/LoreStudio/jh-wp-pin-code/archive/refs/heads/main.zip",
-	"last_updated" : "2023-12-12 00:00:00",
+	"last_updated" : "2024-06-14 11:14:00",
 	"sections" : {
 		"description" : "An easy to use pin code plugin to access the full site.",
 		"installation" : "Install zip file and click activate",

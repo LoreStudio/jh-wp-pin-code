@@ -165,58 +165,60 @@ if ( !class_exists( 'Pincode_Login' ) ) {
 			add_action( 'upgrader_process_complete', [ $this, 'update_purge' ], 10, 2 );
 
 			// Hide page content if pincode is not entered
-			add_action( 'init', function() {
-				ob_start();
-			} );
+			if ( ! is_admin() ) {
+				// Start the output buffer
+				add_action( 'init', function() {
+					ob_start();
+				} );
 
-			add_action( 'shutdown', function() {
-				$final = '';
+				add_action( 'shutdown', function() {
+					$final = '';
 
-				// We'll need to get the number of ob levels we're in, so that we can iterate over each, collecting
-				// that buffer's output into the final output.
-				$levels = ob_get_level();
+					// We'll need to get the number of ob levels we're in, so that we can iterate over each, collecting
+					// that buffer's output into the final output.
+					$levels = ob_get_level();
 
-				for ( $i = 0; $i < $levels; $i++ ) {
-					$final .= ob_get_clean();
-				}
-
-				// Apply any filters to the final output
-				echo apply_filters( 'final_output', $final );
-			}, 0 );
-
-			add_filter( 'final_output', function( $output ) {
-				// Get current page id
-				$page_id = get_queried_object_id();
-
-				// Get pincode from cookie.
-				if ( isset( $_GET['pin'] ) && $this->is_valid_t1d_pin( $_GET['pin'] ) ) {
-					setcookie( 'pincode', $_GET['pin'], time() + ( 2 * 60 * 60 ), '/' );
-					
-					return $output;
-				}
-
-				$protected_type = esc_attr( get_option( 'site_protect_level' ) );
-
-				$is_protected = false;
-
-				if( 'entire_site' == $protected_type ) {
-					$is_protected = true;
-				} else {
-					$protected_pages = get_option( 'protected_pages' );
-
-					if( $protected_pages && in_array( $page_id, $protected_pages ) ) {
-						$is_protected = true;
+					for ( $i = 0; $i < $levels; $i++ ) {
+						$final .= ob_get_clean();
 					}
-				}
 
-				// Remove the content if the page is protected
-				if ( $is_protected && !is_user_logged_in() && !is_admin() ) {
-					$output = preg_replace( '/<article[^>]*>.*?<\/article>/si', '', $output );
-				}
+					// Apply any filters to the final output
+					echo apply_filters( 'final_output', $final );
+				}, 0 );
 
-				return $output;
-			} );
-			
+				add_filter( 'final_output', function( $output ) {
+					// Get current page id
+					$page_id = get_queried_object_id();
+
+					// Get pincode from cookie.
+					if ( isset( $_GET['pin'] ) && $this->is_valid_t1d_pin( $_GET['pin'] ) ) {
+						setcookie( 'pincode', $_GET['pin'], time() + ( 2 * 60 * 60 ), '/' );
+						
+						return $output;
+					}
+
+					$protected_type = esc_attr( get_option( 'site_protect_level' ) );
+
+					$is_protected = false;
+
+					if( 'entire_site' == $protected_type ) {
+						$is_protected = true;
+					} else {
+						$protected_pages = get_option( 'protected_pages' );
+
+						if( $protected_pages && in_array( $page_id, $protected_pages ) ) {
+							$is_protected = true;
+						}
+					}
+
+					// Remove the content if the page is protected
+					if ( $is_protected && !is_user_logged_in() && !is_admin() ) {
+						$output = preg_replace( '/<article[^>]*>.*?<\/article>/si', '', $output );
+					}
+
+					return $output;
+				} );
+			}
 		}
 		public function show_admin_bar_for_admin(){
 			if (!current_user_can('manage_options')) {
