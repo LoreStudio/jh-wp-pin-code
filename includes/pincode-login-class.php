@@ -193,8 +193,17 @@ if ( !class_exists( 'Pincode_Login' ) ) {
 					// Get pincode from cookie.
 					if ( isset( $_GET['pin'] ) && $this->is_valid_t1d_pin( $_GET['pin'] ) ) {
 						setcookie( 'pincode', $_GET['pin'], time() + ( 2 * 60 * 60 ), '/' );
-						
 						return $output;
+					}
+
+					// Single protected page
+					if ( isset( $_COOKIE['pincode'] ) ) {
+						$pincode = sanitize_text_field( $_COOKIE['pincode'] );
+						
+						if ( $this->protected_page( $pincode, site_url( $_SERVER['REQUEST_URI'] ) ) ) {
+							setcookie( 'pincode', '', time() - 3600, '/' );
+							return $output;
+						}
 					}
 
 					$protected_type = esc_attr( get_option( 'site_protect_level' ) );
@@ -378,14 +387,17 @@ if ( !class_exists( 'Pincode_Login' ) ) {
                 // if the user name doesn't exist
 				wp_send_json(array('status' => 'error', 'message' => __('Please enter your pincode')));
             }
+
             if (!empty($pincode) && wp_verify_nonce($_POST['pincode_check_nonce'], 'pincode-check-nonce')) {
 
 				$t1d_pins = $this->t1d_pins( $pincode, $_POST['redirect_to'] );
 
+				$protected_page = $this->protected_page( $pincode, $_POST['redirect_to'] );
+
                 $user = get_user_by('login', $pincode);
 
-                if ($t1d_pins == false && !$user) {
-                    // if the user name doesn't exist
+				// if the user doesn't exist
+                if ($t1d_pins == false && !$user && $protected_page == false) {
 					wp_send_json(array('status' => 'error', 'message' => __('Invalid pincode. Please try again')));
                 }
 
@@ -422,10 +434,50 @@ if ( !class_exists( 'Pincode_Login' ) ) {
 						)
 					);
 				}
+
+				// If pin is set for specific page and pin is correct then set cookie and refresh the page.
+				if ( $protected_page ) {
+					setcookie( 'pincode', $pincode, time() + ( 2 * 60 * 60 ), '/' );
+
+					wp_send_json(
+						array(
+							'status' => 'success',
+							'message' => __('Page password is correct'),
+							'redirect_to' => $protected_page
+						)
+					);
+				}
             }
             // Validation fail
             wp_send_json(array('status' => 'error', 'message' => __('Unknown error occured')));			
         }
+
+		/**
+		 * Single protected page
+		 */
+		function protected_page( $pin, $redirect_to )
+		{
+			$single_protected_pages = get_option( 'single_protected_pages' );
+
+			if ( $single_protected_pages ) {
+				$page_id = url_to_postid( $redirect_to );
+
+				$current_page = array();
+
+				foreach ( $single_protected_pages as $page ) {
+					if ( $page_id == $page->page_id ) {
+						$current_page = $page;
+						break;
+					}
+				}
+				
+				if ( $current_page->page_password == $pin ) {
+					return $redirect_to;
+				}
+			}
+
+			return false;
+		}
 
 		/**
 		 * T1D PIN codes
