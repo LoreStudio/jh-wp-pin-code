@@ -44,6 +44,11 @@
 			update_option( 'popup_study_name', 			$_POST['popup_study_name'] );
 			update_option( 'popup_information_text', 	$_POST['popup_information_text'] );
 			update_option( 'popup_disclaimer_text', 	$_POST['popup_disclaimer_text'] );
+
+			// Single Page Protection
+			if ( isset( $_POST['single_protected_pages'] ) && ! empty( $_POST['single_protected_pages'] ) ) {
+				update_option( 'single_protected_pages', json_decode( stripslashes( $_POST['single_protected_pages'] ) ) );
+			}
 		}
 	}
 
@@ -257,13 +262,13 @@
 							color: #fff !important;
 							margin-left: 10px !important;
 						}
-						.selected-pasword-pages {
+						.selected-password-pages {
 							margin-top: 10px;
 						}
-						.selected-pasword-pages p {
+						.selected-password-pages p {
 							margin-bottom: 5px !important;
 						}
-						.selected-pasword-pages button {
+						.selected-password-pages button {
 							margin-right: 5px !important;
 						}
 					</style>
@@ -273,14 +278,33 @@
 						</label>
 					</th>
 					<td>
-						<input id="single-password-pages" type="hidden" name="protected_pages">
+						<?php
+							$single_protected_pages = get_option( 'single_protected_pages' );
+
+							// echo '<pre>';
+							// var_dump( get_option( 'single_protected_pages' ) );
+							// echo '</pre>';
+						?>
+						<input id="single-protected-pages" type="hidden" name="single_protected_pages">
 
 						<select id="wp-pages" name="wp_pages">
 							<option value="">
 								Select Page
 							</option>
-							<?php foreach ( $pages as $page ) : ?>
-								<option value="<?php echo $page->ID ?>">
+
+							<?php 
+								foreach ( $pages as $page ) :
+									$display = '';
+
+									if ( $single_protected_pages ) {
+										foreach ( $single_protected_pages as $protected_page ) {
+											if ( $protected_page->page_id == $page->ID ) {
+												$display = 'display:none';
+											}
+										}
+									}
+							?>
+								<option value="<?php echo $page->ID ?>" style="<?php echo $display; ?>">
 									<?php echo $page->post_title; ?>
 								</option>
 							<?php endforeach; ?>
@@ -291,8 +315,21 @@
 						<button id="cancel-password-btn" class="button button-default" type="button" style="display:none">Cancel</button>
 						<button id="delete-password-btn" class="button button-danger" type="button" style="display:none">Delete</button>
 
-						<div id="selected-pasword-pages" class="selected-pasword-pages" style="display:none">
+						<div id="selected-password-pages" class="selected-password-pages" style="<?php echo $single_protected_pages ? '' : 'display:none'; ?>" data-pages='<?php echo $single_protected_pages ? json_encode( $single_protected_pages ) : ''; ?>'>
 							<p>Password Protected Pages</p>
+
+							<?php
+								if ( $single_protected_pages ) :
+									foreach ( $single_protected_pages as $page ) :
+										$page_obj = get_post( $page->page_id );
+							?>
+								<button data-page-id="<?php echo $page->page_id; ?>" data-page-password="<?php echo $page->page_password; ?>" class="button button-secondary" type="button">
+									<?php echo $page_obj->post_title; ?>
+								</button>
+							<?php
+									endforeach;
+								endif;
+							?>	
 						</div>
 					</td>
 					<script>
@@ -300,7 +337,7 @@
 						window.onload = function() {
 							var protected_pages = [];
 
-							var single_password_pages = document.getElementById('single-password-pages');
+							var single_protected_pages = document.getElementById('single-protected-pages');
 							var wp_pages_select = document.getElementById('wp-pages');
 							var wp_page_password = document.getElementById('wp-page-password');
 							var add_button = document.getElementById('add-password-btn');
@@ -309,7 +346,43 @@
 							var cancel_button = document.getElementById('cancel-password-btn');
 							var delete_button = document.getElementById('delete-password-btn');
 
-							var selected_pasword_pages = document.getElementById('selected-pasword-pages');
+							var selected_password_pages = document.getElementById('selected-password-pages');
+
+							// If protected pages are already saved, add an event listener to each button
+							if (selected_password_pages.getAttribute('data-pages')) {
+								protected_pages = JSON.parse(selected_password_pages.getAttribute('data-pages'));
+								
+							}
+
+							if (protected_pages) {
+								single_protected_pages.value = JSON.stringify(protected_pages);
+
+								var pages = selected_password_pages.getElementsByTagName('button');
+
+								for (var i = 0; i < pages.length; i++) {
+									pages[i].addEventListener('click', function() {
+										var page_id = this.getAttribute('data-page-id');
+										var page_password = this.getAttribute('data-page-password');
+
+										wp_pages_select.value = page_id;
+										wp_page_password.value = page_password;
+
+										// Loop through the options and show the selected option
+										for (var i = 0; i < wp_pages_select.options.length; i++) {
+											if (wp_pages_select.options[i].value == page_id) {
+												wp_pages_select.options[i].style.display = 'block';
+											} else {
+												wp_pages_select.options[i].style.display = 'none';
+											}
+										}
+
+										add_button.style.display = 'none';
+										update_button.style.display = 'inline-block';
+										cancel_button.style.display = 'inline-block';
+										delete_button.style.display = 'inline-block';
+									});
+								}
+							}
 
 							// Add
 							add_button.addEventListener('click', function() {
@@ -359,11 +432,11 @@
 									page_password: page_password
 								});
 
-								single_password_pages.value = JSON.stringify(protected_pages);
+								single_protected_pages.value = JSON.stringify(protected_pages);
 
 								// Add page to selected pages
-								selected_pasword_pages.style.display = 'block';
-								selected_pasword_pages.appendChild(page);
+								selected_password_pages.style.display = 'block';
+								selected_password_pages.appendChild(page);
 
 								// Set display of selected pages option to none
 								wp_pages_select.options[wp_pages_select.selectedIndex].style.display = 'none';
@@ -386,7 +459,7 @@
 								}
 
 								// Loop through the selected pages and update the page
-								var pages = selected_pasword_pages.getElementsByTagName('button');
+								var pages = selected_password_pages.getElementsByTagName('button');
 								for (var i = 0; i < pages.length; i++) {
 									if (pages[i].getAttribute('data-page-id') == page_id) {
 										pages[i].innerHTML = page_name;
@@ -416,7 +489,7 @@
 									return page;
 								});
 
-								single_password_pages.value = JSON.stringify(protected_pages);
+								single_protected_pages.value = JSON.stringify(protected_pages);
 
 								// Reset fields
 								wp_pages_select.value = '';
@@ -431,7 +504,7 @@
 							// Cancel
 							cancel_button.addEventListener('click', function() {
 								// Loop through the options and only show the non-selected options
-								var pages = selected_pasword_pages.getElementsByTagName('button');
+								var pages = selected_password_pages.getElementsByTagName('button');
 
 								pages = Array.from(pages).map(function(page) {
 									return page.getAttribute('data-page-id');
@@ -460,10 +533,10 @@
 								var page_id = wp_pages_select.value;
 
 								// Loop through the selected pages and remove the page
-								var pages = selected_pasword_pages.getElementsByTagName('button');
+								var pages = selected_password_pages.getElementsByTagName('button');
 								for (var i = 0; i < pages.length; i++) {
 									if (pages[i].getAttribute('data-page-id') == page_id) {
-										selected_pasword_pages.removeChild(pages[i]);
+										selected_password_pages.removeChild(pages[i]);
 									}
 								}
 
@@ -493,7 +566,7 @@
 									return page.page_id != page_id;
 								});
 
-								single_password_pages.value = JSON.stringify(protected_pages);
+								single_protected_pages.value = JSON.stringify(protected_pages);
 
 								// Reset fields
 								wp_pages_select.value = '';
@@ -505,8 +578,8 @@
 								delete_button.style.display = 'none';
 
 								// If no pages are selected, hide the selected pages div
-								if (selected_pasword_pages.getElementsByTagName('button').length == 0) {
-									selected_pasword_pages.style.display = 'none';
+								if (selected_password_pages.getElementsByTagName('button').length == 0) {
+									selected_password_pages.style.display = 'none';
 								}
 							});
 						}
