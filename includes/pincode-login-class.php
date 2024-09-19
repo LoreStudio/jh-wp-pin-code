@@ -199,6 +199,10 @@ if ( !class_exists( 'Pincode_Login' ) ) {
 					// Single protected page
 					if ( isset( $_COOKIE['pincode'] ) ) {
 						$pincode = sanitize_text_field( $_COOKIE['pincode'] );
+
+						if ( $this->site_wide_protection( $pincode, site_url( $_SERVER['REQUEST_URI'] ) ) ) {
+							return $output;
+						}
 						
 						if ( $this->protected_page( $pincode, site_url( $_SERVER['REQUEST_URI'] ) ) ) {
 							setcookie( 'pincode', '', time() - 3600, '/' );
@@ -213,10 +217,15 @@ if ( !class_exists( 'Pincode_Login' ) ) {
 					if( 'entire_site' == $protected_type ) {
 						$is_protected = true;
 					} else {
-						$protected_pages = get_option( 'protected_pages' );
+						$single_protected_pages = get_option( 'single_protected_pages' );
 
-						if( $protected_pages && in_array( $page_id, $protected_pages ) ) {
-							$is_protected = true;
+						if ( $single_protected_pages ) {
+							foreach ( $single_protected_pages as $page ) {
+								if ( $page_id == $page->page_id ) {
+									$is_protected = true;
+									break;
+								}
+							}
 						}
 					}
 
@@ -293,21 +302,37 @@ if ( !class_exists( 'Pincode_Login' ) ) {
 		// The callback function that will replace [pincode_login_check]
        public function pincode_login_check_user() {
 		   global $post;
+
             $protected_type = esc_attr(get_option('site_protect_level'));
+
 			$is_protected = false;
-			if('entire_site' == $protected_type){
+
+			if ( 'entire_site' == $protected_type ) {
 				$is_protected = true;
-			}else{
-				$protected_pages = get_option('protected_pages');
-				if($protected_pages && in_array($post->ID, $protected_pages)){
-					$is_protected = true;
+			} else {
+				$single_protected_pages = get_option( 'single_protected_pages' );
+
+				if ( $single_protected_pages ) {
+					foreach ( $single_protected_pages as $page ) {
+						if ( $post->ID == $page->page_id ) {
+							$is_protected = true;
+							break;
+						}
+					}
 				}
 			}
 
 			// Get pincode from cookie.
 			if ( isset( $_COOKIE['pincode'] ) ) {
 				$pincode = sanitize_text_field( $_COOKIE['pincode'] );
-				return;
+
+				if ( 'entire_site' == $protected_type && $this->site_wide_protection( $pincode, site_url( $_SERVER['REQUEST_URI'] ) ) ) {
+					return;
+				}
+
+				if ( 'protect_pages' == $protected_type && $this->protected_page( $pincode, site_url( $_SERVER['REQUEST_URI'] ) ) ) {
+					return;
+				}				
 			}
 
 			// Get pincode from url.
@@ -394,23 +419,17 @@ if ( !class_exists( 'Pincode_Login' ) ) {
 
 				$protected_page = $this->protected_page( $pincode, $_POST['redirect_to'] );
 
-                $user = get_user_by('login', $pincode);
+                $site_wide_protection = $this->site_wide_protection( $pincode, $_POST['redirect_to'] );
 
 				// if the user doesn't exist
-                if ($t1d_pins == false && !$user && $protected_page == false) {
+                if ($t1d_pins == false && $site_wide_protection == false && $protected_page == false) {
 					wp_send_json(array('status' => 'error', 'message' => __('Invalid pincode. Please try again')));
                 }
 
-				// If user, then login user and show page.
-				if ( $user ) {
-					// wp_set_current_user($user->ID);
-					wp_set_auth_cookie($user->ID, 1);
-
-					// Set cookie for pincode for 2 hours - t1dclinicaltrial.com
-					if ( strpos( $_POST['redirect_to'], 't1dclinicaltrial.com' ) != false ) {
-						setcookie( 'pincode', $pincode, time() + ( 2 * 60 * 60 ), '/' );
-					}
-
+				// If pin is correct for site wide protection then set cookie and redirect to the page.
+				if ( $site_wide_protection ) {
+					setcookie( 'pincode', $pincode, time() + ( 2 * 60 * 60 ), '/' );
+					
 					wp_send_json(
 						array(
 							'status' => 'success',
@@ -451,6 +470,24 @@ if ( !class_exists( 'Pincode_Login' ) ) {
             // Validation fail
             wp_send_json(array('status' => 'error', 'message' => __('Unknown error occured')));			
         }
+
+		/**
+		 * Site wide protection
+		 */
+		function site_wide_protection( $pin, $redirect_to )
+		{
+			$site_protect_level = get_option( 'site_protect_level' );
+
+			if ( $site_protect_level == 'entire_site' ) {
+				$site_wide_pin = get_option( 'site_wide_pin' );
+
+				if ( $site_wide_pin == $pin ) {
+					return $redirect_to;
+				}
+			}
+
+			return false;
+		}
 
 		/**
 		 * Single protected page

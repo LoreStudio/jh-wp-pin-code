@@ -36,7 +36,14 @@
 			if ( $_POST['site_protect_level'] == 'protect_pages' ) {
 				update_option( 'protected_pages', $protected_pages );
 			}
+
 			update_option( 'site_protect_level', 		$_POST['site_protect_level'] );
+			update_option( 'site_wide_pin', 			$_POST['site_wide_pin'] );
+
+			if ( isset( $_POST['single_protected_pages'] ) && ! empty( $_POST['single_protected_pages'] ) ) {
+				update_option( 'single_protected_pages', json_decode( stripslashes( $_POST['single_protected_pages'] ) ) );
+			}
+
 			update_option( 'popup_background_color', 	$_POST['popup_background_color'] );
 			update_option( 'popup_text', 				$_POST['popup_text'] );
 			update_option( 'popup_logo_url', 			$_POST['popup_img_src'] );
@@ -44,11 +51,6 @@
 			update_option( 'popup_study_name', 			$_POST['popup_study_name'] );
 			update_option( 'popup_information_text', 	$_POST['popup_information_text'] );
 			update_option( 'popup_disclaimer_text', 	$_POST['popup_disclaimer_text'] );
-
-			// Single Page Protection
-			if ( isset( $_POST['single_protected_pages'] ) && ! empty( $_POST['single_protected_pages'] ) ) {
-				update_option( 'single_protected_pages', json_decode( stripslashes( $_POST['single_protected_pages'] ) ) );
-			}
 		}
 	}
 
@@ -207,7 +209,7 @@
 				<tr>
 					<th scope="row">
 						<label for="protection_level">
-							Global Protection Level
+							Protection Level
 						</label>
 					</th>
 					<td>
@@ -226,31 +228,20 @@
 							<input <?php if ( 'protect_pages' == $protected_type ) { echo 'checked'; } ?> type="radio" name="site_protect_level" value="protect_pages">
 							Protect Specific Pages
 						</label>
-						<div id="protect_pages_wrapper" <?php if ( 'protect_pages' != $protected_type ) { echo 'style="display:none;"'; } ?> >
-							<h2>
-								Select page to protect
-							</h2>
-							<?php
-								$protected_pages = get_option( 'protected_pages' );
-								$pages = get_pages(
-									array(
-										'post_status'  => 'publish',
-										'sort_order'   => 'ASC',
-										'sort_column'  => 'post_title'
-									)
-								);
-							?>
-							<?php foreach ( $pages as $page ) : ?>
-								<p>
-									<?php $checked = $protected_pages && in_array( $page->ID, $protected_pages ) ?>
-									<input type="checkbox" name="selected_pages[]" value="<?php echo $page->ID; ?>" <?php if ( $checked ) { echo 'checked'; } ?> >
-									<?php echo $page->post_title; ?>
-								</p>
-							<?php endforeach?>
-						</div>
 					</td>                       
 				</tr>
-				<tr id="single-page-protecttion">
+				<tr id="site-wide-pin" style="<?php echo $protected_type == 'entire_site' ? '' : 'display:none'; ?>">
+					<th scope="row">
+						<label for="disclaimer_text">
+							Pin Code
+						</label>
+					</th>
+					<td>
+						<?php $site_wide_pin = get_option( 'site_wide_pin' ) ? esc_attr ( get_option( 'site_wide_pin' ) ) : '' ?>
+						<input type="text" name="site_wide_pin" value="<?php echo $site_wide_pin; ?>" style="width: 400px;">
+					</td>                       
+				</tr>
+				<tr id="single-page-protecttion" style="<?php echo $protected_type == 'protect_pages' ? '' : 'display:none'; ?>">
 					<style>
 						.button-default {
 							border-color: #c3c4c7 !important;
@@ -274,7 +265,7 @@
 					</style>
 					<th scope="row">
 						<label>
-							Single Page Protection
+							Pin Codes
 						</label>
 					</th>
 					<td>
@@ -292,7 +283,15 @@
 								Select Page
 							</option>
 
-							<?php 
+							<?php
+								$pages = get_pages(
+									array(
+										'post_status'  => 'publish',
+										'sort_order'   => 'ASC',
+										'sort_column'  => 'post_title'
+									)
+								);
+
 								foreach ( $pages as $page ) :
 									$display = '';
 
@@ -332,272 +331,279 @@
 							?>	
 						</div>
 					</td>
-					<script>
-						// on page load
-						window.onload = function() {
-							var protected_pages = [];
-
-							var single_protected_pages = document.getElementById('single-protected-pages');
-							var wp_pages_select = document.getElementById('wp-pages');
-							var wp_page_password = document.getElementById('wp-page-password');
-							var add_button = document.getElementById('add-password-btn');
-
-							var update_button = document.getElementById('update-password-btn');
-							var cancel_button = document.getElementById('cancel-password-btn');
-							var delete_button = document.getElementById('delete-password-btn');
-
-							var selected_password_pages = document.getElementById('selected-password-pages');
-
-							// If protected pages are already saved, add an event listener to each button
-							if (selected_password_pages.getAttribute('data-pages')) {
-								protected_pages = JSON.parse(selected_password_pages.getAttribute('data-pages'));
-								
-							}
-
-							if (protected_pages) {
-								single_protected_pages.value = JSON.stringify(protected_pages);
-
-								var pages = selected_password_pages.getElementsByTagName('button');
-
-								for (var i = 0; i < pages.length; i++) {
-									pages[i].addEventListener('click', function() {
-										var page_id = this.getAttribute('data-page-id');
-										var page_password = this.getAttribute('data-page-password');
-
-										wp_pages_select.value = page_id;
-										wp_page_password.value = page_password;
-
-										// Loop through the options and show the selected option
-										for (var i = 0; i < wp_pages_select.options.length; i++) {
-											if (wp_pages_select.options[i].value == page_id) {
-												wp_pages_select.options[i].style.display = 'block';
-											} else {
-												wp_pages_select.options[i].style.display = 'none';
-											}
-										}
-
-										add_button.style.display = 'none';
-										update_button.style.display = 'inline-block';
-										cancel_button.style.display = 'inline-block';
-										delete_button.style.display = 'inline-block';
-									});
-								}
-							}
-
-							// Add
-							add_button.addEventListener('click', function() {
-								var page_id = wp_pages_select.value;
-								var page_name = wp_pages_select.options[wp_pages_select.selectedIndex].text;
-								var page_password = wp_page_password.value;
-
-								if ( ! page_id || ! page_password ) {
-									alert('Please select page and enter password');
-									return;
-								}
-
-								// Create page button
-								var page = document.createElement('button');
-								page.innerHTML = page_name;
-								page.setAttribute('data-page-id', page_id);
-								page.setAttribute('data-page-password', page_password);
-								page.setAttribute('class', 'button button-secondary');
-								page.setAttribute('type', 'button');
-
-								// Add click event to page button
-								page.addEventListener('click', function() {
-									var page_id = this.getAttribute('data-page-id');
-									var page_password = this.getAttribute('data-page-password');
-
-									wp_pages_select.value = page_id;
-									wp_page_password.value = page_password;
-
-									// Loop through the options and show the selected option
-									for (var i = 0; i < wp_pages_select.options.length; i++) {
-										if (wp_pages_select.options[i].value == page_id) {
-											wp_pages_select.options[i].style.display = 'block';
-										} else {
-											wp_pages_select.options[i].style.display = 'none';
-										}
-									}
-
-									add_button.style.display = 'none';
-									update_button.style.display = 'inline-block';
-									cancel_button.style.display = 'inline-block';
-									delete_button.style.display = 'inline-block';
-								});
-
-								// Add page and password to hidden input
-								protected_pages.push({
-									page_id: page_id,
-									page_password: page_password
-								});
-
-								single_protected_pages.value = JSON.stringify(protected_pages);
-
-								// Add page to selected pages
-								selected_password_pages.style.display = 'block';
-								selected_password_pages.appendChild(page);
-
-								// Set display of selected pages option to none
-								wp_pages_select.options[wp_pages_select.selectedIndex].style.display = 'none';
-
-								// Reset fields
-								wp_pages_select.value = '';
-								wp_page_password.value = '';
-
-							});
-
-							// Update
-							update_button.addEventListener('click', function() {
-								var page_id = wp_pages_select.value;
-								var page_name = wp_pages_select.options[wp_pages_select.selectedIndex].text;
-								var page_password = wp_page_password.value;
-
-								if ( ! page_id || ! page_password ) {
-									alert('Please select page and enter password');
-									return;
-								}
-
-								// Loop through the selected pages and update the page
-								var pages = selected_password_pages.getElementsByTagName('button');
-								for (var i = 0; i < pages.length; i++) {
-									if (pages[i].getAttribute('data-page-id') == page_id) {
-										pages[i].innerHTML = page_name;
-										pages[i].setAttribute('data-page-password', page_password);
-									}
-								}
-
-								// Loop through the options and only show the non-selected options
-								pages = Array.from(pages).map(function(page) {
-									return page.getAttribute('data-page-id');
-								});
-
-								for (var i = 0; i < wp_pages_select.options.length; i++) {
-									// If page_id is in array pages, then hide the option
-									if (pages.includes(wp_pages_select.options[i].value)) {
-										wp_pages_select.options[i].style.display = 'none';
-									} else {
-										wp_pages_select.options[i].style.display = 'block';
-									}
-								}
-
-								// Update page and password to hidden input
-								protected_pages = protected_pages.map(function(page) {
-									if (page.page_id == page_id) {
-										page.page_password = page_password;
-									}
-									return page;
-								});
-
-								single_protected_pages.value = JSON.stringify(protected_pages);
-
-								// Reset fields
-								wp_pages_select.value = '';
-								wp_page_password.value = '';
-
-								add_button.style.display = 'inline-block';
-								update_button.style.display = 'none';
-								cancel_button.style.display = 'none';
-								delete_button.style.display = 'none';
-							});
-
-							// Cancel
-							cancel_button.addEventListener('click', function() {
-								// Loop through the options and only show the non-selected options
-								var pages = selected_password_pages.getElementsByTagName('button');
-
-								pages = Array.from(pages).map(function(page) {
-									return page.getAttribute('data-page-id');
-								});
-
-								for (var i = 0; i < wp_pages_select.options.length; i++) {
-									// If page_id is in array pages, then hide the option
-									if (pages.includes(wp_pages_select.options[i].value)) {
-										wp_pages_select.options[i].style.display = 'none';
-									} else {
-										wp_pages_select.options[i].style.display = 'block';
-									}
-								}
-
-								wp_pages_select.value = '';
-								wp_page_password.value = '';
-
-								add_button.style.display = 'inline-block';
-								update_button.style.display = 'none';
-								cancel_button.style.display = 'none';
-								delete_button.style.display = 'none';
-							});
-
-							// Delete
-							delete_button.addEventListener('click', function() {
-								var page_id = wp_pages_select.value;
-
-								// Loop through the selected pages and remove the page
-								var pages = selected_password_pages.getElementsByTagName('button');
-								for (var i = 0; i < pages.length; i++) {
-									if (pages[i].getAttribute('data-page-id') == page_id) {
-										selected_password_pages.removeChild(pages[i]);
-									}
-								}
-
-								// Loop through the options and only show the non-selected options
-								pages = Array.from(pages).map(function(page) {
-									return page.getAttribute('data-page-id');
-								});
-
-								for (var i = 0; i < wp_pages_select.options.length; i++) {
-									// If page_id is in array pages, then hide the option
-									if (pages.includes(wp_pages_select.options[i].value)) {
-										wp_pages_select.options[i].style.display = 'none';
-									} else {
-										wp_pages_select.options[i].style.display = 'block';
-									}
-								}
-
-								// Loop through the options and show the selected option
-								for (var i = 0; i < wp_pages_select.options.length; i++) {
-									if (wp_pages_select.options[i].value == page_id) {
-										wp_pages_select.options[i].style.display = 'block';
-									}
-								}
-
-								// Update page and password to hidden input
-								protected_pages = protected_pages.filter(function(page) {
-									return page.page_id != page_id;
-								});
-
-								single_protected_pages.value = JSON.stringify(protected_pages);
-
-								// Reset fields
-								wp_pages_select.value = '';
-								wp_page_password.value = '';
-
-								add_button.style.display = 'inline-block';
-								update_button.style.display = 'none';
-								cancel_button.style.display = 'none';
-								delete_button.style.display = 'none';
-
-								// If no pages are selected, hide the selected pages div
-								if (selected_password_pages.getElementsByTagName('button').length == 0) {
-									selected_password_pages.style.display = 'none';
-								}
-							});
-						}
-					</script>
 				</tr>
 			</table>                
 			<input class="button button-primary" name="save_settings" value="Save Settings" type="submit">
 		</form>
 		<script>
-			jQuery(document).ready(function(e) {
-			   jQuery('input[name="site_protect_level"]').on('change', function(){
-				   if(jQuery(this).val() == 'entire_site'){
-					   jQuery('#protect_pages_wrapper').hide();
-				   }else{
-						jQuery('#protect_pages_wrapper').show();
-				   }
-			   });
-			});
+			window.onload = function() {
+				// If input site_protect_level changes
+				var site_protection = document.querySelectorAll('input[name="site_protect_level"]');
+
+				for (var i = 0; i < site_protection.length; i++) {
+					site_protection[i].addEventListener('change', function() {
+						var global_pin = document.getElementById('site-wide-pin');
+						var single_page_protection = document.getElementById('single-page-protecttion');
+
+						if (this.value == 'entire_site') {
+							global_pin.style.display = 'table-row';
+							single_page_protection.style.display = 'none';
+						} else {
+							global_pin.style.display = 'none';
+							single_page_protection.style.display = 'table-row';
+						}
+					});
+				}
+
+				// Single Page Protection
+				var protected_pages = [];
+
+				var single_protected_pages = document.getElementById('single-protected-pages');
+				var wp_pages_select = document.getElementById('wp-pages');
+				var wp_page_password = document.getElementById('wp-page-password');
+				var add_button = document.getElementById('add-password-btn');
+
+				var update_button = document.getElementById('update-password-btn');
+				var cancel_button = document.getElementById('cancel-password-btn');
+				var delete_button = document.getElementById('delete-password-btn');
+
+				var selected_password_pages = document.getElementById('selected-password-pages');
+
+				// If protected pages are already saved, add an event listener to each button
+				if (selected_password_pages.getAttribute('data-pages')) {
+					protected_pages = JSON.parse(selected_password_pages.getAttribute('data-pages'));
+					
+				}
+
+				if (protected_pages) {
+					single_protected_pages.value = JSON.stringify(protected_pages);
+
+					var pages = selected_password_pages.getElementsByTagName('button');
+
+					for (var i = 0; i < pages.length; i++) {
+						pages[i].addEventListener('click', function() {
+							var page_id = this.getAttribute('data-page-id');
+							var page_password = this.getAttribute('data-page-password');
+
+							wp_pages_select.value = page_id;
+							wp_page_password.value = page_password;
+
+							// Loop through the options and show the selected option
+							for (var i = 0; i < wp_pages_select.options.length; i++) {
+								if (wp_pages_select.options[i].value == page_id) {
+									wp_pages_select.options[i].style.display = 'block';
+								} else {
+									wp_pages_select.options[i].style.display = 'none';
+								}
+							}
+
+							add_button.style.display = 'none';
+							update_button.style.display = 'inline-block';
+							cancel_button.style.display = 'inline-block';
+							delete_button.style.display = 'inline-block';
+						});
+					}
+				}
+
+				// Add
+				add_button.addEventListener('click', function() {
+					var page_id = wp_pages_select.value;
+					var page_name = wp_pages_select.options[wp_pages_select.selectedIndex].text;
+					var page_password = wp_page_password.value;
+
+					if ( ! page_id || ! page_password ) {
+						alert('Please select page and enter password');
+						return;
+					}
+
+					// Create page button
+					var page = document.createElement('button');
+					page.innerHTML = page_name;
+					page.setAttribute('data-page-id', page_id);
+					page.setAttribute('data-page-password', page_password);
+					page.setAttribute('class', 'button button-secondary');
+					page.setAttribute('type', 'button');
+
+					// Add click event to page button
+					page.addEventListener('click', function() {
+						var page_id = this.getAttribute('data-page-id');
+						var page_password = this.getAttribute('data-page-password');
+
+						wp_pages_select.value = page_id;
+						wp_page_password.value = page_password;
+
+						// Loop through the options and show the selected option
+						for (var i = 0; i < wp_pages_select.options.length; i++) {
+							if (wp_pages_select.options[i].value == page_id) {
+								wp_pages_select.options[i].style.display = 'block';
+							} else {
+								wp_pages_select.options[i].style.display = 'none';
+							}
+						}
+
+						add_button.style.display = 'none';
+						update_button.style.display = 'inline-block';
+						cancel_button.style.display = 'inline-block';
+						delete_button.style.display = 'inline-block';
+					});
+
+					// Add page and password to hidden input
+					protected_pages.push({
+						page_id: page_id,
+						page_password: page_password
+					});
+
+					single_protected_pages.value = JSON.stringify(protected_pages);
+
+					// Add page to selected pages
+					selected_password_pages.style.display = 'block';
+					selected_password_pages.appendChild(page);
+
+					// Set display of selected pages option to none
+					wp_pages_select.options[wp_pages_select.selectedIndex].style.display = 'none';
+
+					// Reset fields
+					wp_pages_select.value = '';
+					wp_page_password.value = '';
+
+				});
+
+				// Update
+				update_button.addEventListener('click', function() {
+					var page_id = wp_pages_select.value;
+					var page_name = wp_pages_select.options[wp_pages_select.selectedIndex].text;
+					var page_password = wp_page_password.value;
+
+					if ( ! page_id || ! page_password ) {
+						alert('Please select page and enter password');
+						return;
+					}
+
+					// Loop through the selected pages and update the page
+					var pages = selected_password_pages.getElementsByTagName('button');
+					for (var i = 0; i < pages.length; i++) {
+						if (pages[i].getAttribute('data-page-id') == page_id) {
+							pages[i].innerHTML = page_name;
+							pages[i].setAttribute('data-page-password', page_password);
+						}
+					}
+
+					// Loop through the options and only show the non-selected options
+					pages = Array.from(pages).map(function(page) {
+						return page.getAttribute('data-page-id');
+					});
+
+					for (var i = 0; i < wp_pages_select.options.length; i++) {
+						// If page_id is in array pages, then hide the option
+						if (pages.includes(wp_pages_select.options[i].value)) {
+							wp_pages_select.options[i].style.display = 'none';
+						} else {
+							wp_pages_select.options[i].style.display = 'block';
+						}
+					}
+
+					// Update page and password to hidden input
+					protected_pages = protected_pages.map(function(page) {
+						if (page.page_id == page_id) {
+							page.page_password = page_password;
+						}
+						return page;
+					});
+
+					single_protected_pages.value = JSON.stringify(protected_pages);
+
+					// Reset fields
+					wp_pages_select.value = '';
+					wp_page_password.value = '';
+
+					add_button.style.display = 'inline-block';
+					update_button.style.display = 'none';
+					cancel_button.style.display = 'none';
+					delete_button.style.display = 'none';
+				});
+
+				// Cancel
+				cancel_button.addEventListener('click', function() {
+					// Loop through the options and only show the non-selected options
+					var pages = selected_password_pages.getElementsByTagName('button');
+
+					pages = Array.from(pages).map(function(page) {
+						return page.getAttribute('data-page-id');
+					});
+
+					for (var i = 0; i < wp_pages_select.options.length; i++) {
+						// If page_id is in array pages, then hide the option
+						if (pages.includes(wp_pages_select.options[i].value)) {
+							wp_pages_select.options[i].style.display = 'none';
+						} else {
+							wp_pages_select.options[i].style.display = 'block';
+						}
+					}
+
+					wp_pages_select.value = '';
+					wp_page_password.value = '';
+
+					add_button.style.display = 'inline-block';
+					update_button.style.display = 'none';
+					cancel_button.style.display = 'none';
+					delete_button.style.display = 'none';
+				});
+
+				// Delete
+				delete_button.addEventListener('click', function() {
+					var page_id = wp_pages_select.value;
+
+					// Loop through the selected pages and remove the page
+					var pages = selected_password_pages.getElementsByTagName('button');
+					for (var i = 0; i < pages.length; i++) {
+						if (pages[i].getAttribute('data-page-id') == page_id) {
+							selected_password_pages.removeChild(pages[i]);
+						}
+					}
+
+					// Loop through the options and only show the non-selected options
+					pages = Array.from(pages).map(function(page) {
+						return page.getAttribute('data-page-id');
+					});
+
+					for (var i = 0; i < wp_pages_select.options.length; i++) {
+						// If page_id is in array pages, then hide the option
+						if (pages.includes(wp_pages_select.options[i].value)) {
+							wp_pages_select.options[i].style.display = 'none';
+						} else {
+							wp_pages_select.options[i].style.display = 'block';
+						}
+					}
+
+					// Loop through the options and show the selected option
+					for (var i = 0; i < wp_pages_select.options.length; i++) {
+						if (wp_pages_select.options[i].value == page_id) {
+							wp_pages_select.options[i].style.display = 'block';
+						}
+					}
+
+					// Update page and password to hidden input
+					protected_pages = protected_pages.filter(function(page) {
+						return page.page_id != page_id;
+					});
+
+					single_protected_pages.value = JSON.stringify(protected_pages);
+
+					// Reset fields
+					wp_pages_select.value = '';
+					wp_page_password.value = '';
+
+					add_button.style.display = 'inline-block';
+					update_button.style.display = 'none';
+					cancel_button.style.display = 'none';
+					delete_button.style.display = 'none';
+
+					// If no pages are selected, hide the selected pages div
+					if (selected_password_pages.getElementsByTagName('button').length == 0) {
+						selected_password_pages.style.display = 'none';
+					}
+				});
+			}
 		</script>
 	</div>
 </div>
