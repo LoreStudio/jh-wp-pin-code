@@ -295,6 +295,11 @@ if ( !class_exists( 'Pincode_Login' ) ) {
 			if ( $expire_hours > 1 ) {
 				$strtotime = '+' . $expire_hours . ' hours';
 			}
+
+			// Purge varnish cache
+			if ( function_exists( 'wpecommon::purge_varnish_cache' ) ) {
+				wpecommon::purge_varnish_cache();
+			}
 			
 			// If browser information already exists, then update it
 			if ( $this->browser_info_exists( $browser, $ip_address ) ) {
