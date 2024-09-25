@@ -164,6 +164,10 @@ if ( !class_exists( 'Pincode_Login' ) ) {
 			add_filter( 'site_transient_update_plugins', [ $this, 'plugin_update' ] );
 			add_action( 'upgrader_process_complete', [ $this, 'update_purge' ], 10, 2 );
 
+			// Create custom table to store broswers information.
+			$this->create_browser_table();
+			$this->delete_expired_browser_info();
+
 			// Hide page content if pincode is not entered
 			if ( ! is_admin() ) {
 				// Start the output buffer
@@ -192,20 +196,21 @@ if ( !class_exists( 'Pincode_Login' ) ) {
 
 					// Get pincode from cookie.
 					if ( isset( $_GET['pin'] ) && $this->is_valid_t1d_pin( $_GET['pin'] ) ) {
-						setcookie( 'pincode', $_GET['pin'], time() + ( 2 * 60 * 60 ), '/' );
 						return $output;
 					}
 
-					// Single protected page
-					if ( isset( $_COOKIE['pincode'] ) ) {
-						$pincode = sanitize_text_field( $_COOKIE['pincode'] );
+					// Protected page
+					if ( $this->browser_info_exists( $_SERVER['HTTP_USER_AGENT'], $_SERVER['REMOTE_ADDR'] ) ) {
+
+						$browser_info = $this->browser_info_exists( $_SERVER['HTTP_USER_AGENT'], $_SERVER['REMOTE_ADDR'] );
+
+						$pincode = $browser_info->pin;
 
 						if ( $this->site_wide_protection( $pincode, site_url( $_SERVER['REQUEST_URI'] ) ) ) {
 							return $output;
 						}
 						
 						if ( $this->protected_page( $pincode, site_url( $_SERVER['REQUEST_URI'] ) ) ) {
-							setcookie( 'pincode', '', time() - 3600, '/' );
 							return $output;
 						}
 					}
@@ -238,6 +243,134 @@ if ( !class_exists( 'Pincode_Login' ) ) {
 				} );
 			}
 		}
+
+		/**
+		 * Create custom table to store broswers information.
+		 */
+		public function create_browser_table()
+		{
+			global $wpdb;
+
+			$table_name = $wpdb->prefix . 'pincode_browser_identification';
+
+			// Check if the table already exists
+			if ( $wpdb->get_var( "SHOW TABLES LIKE '$table_name'" ) == $table_name ) {
+				return;
+			}
+
+			$charset_collate = $wpdb->get_charset_collate();
+
+			$sql = "CREATE TABLE IF NOT EXISTS $table_name (
+				id mediumint(9) NOT NULL AUTO_INCREMENT,
+				browser varchar(255) NOT NULL,
+				ip_address varchar(255) NOT NULL,
+				pin varchar(255) NOT NULL,
+				created_at datetime DEFAULT CURRENT_TIMESTAMP NOT NULL,
+				expires_at TIMESTAMP,
+				PRIMARY KEY  (id)
+			) $charset_collate;";
+
+			require_once( ABSPATH . 'wp-admin/includes/upgrade.php' );
+			dbDelta( $sql );
+		}
+
+		/**
+		 * Store browser information
+		 */
+		public function store_browser_info( $browser, $ip_address, $pin )
+		{
+			global $wpdb;
+
+			$table_name = $wpdb->prefix . 'pincode_browser_identification';
+
+			// Expire time
+			$expire_hours = esc_attr(get_option('expire_cookie_hour'));
+
+			if( !$expire_hours ){
+				$expire_hours = 24;
+			}
+
+			$strtotime = '+1 hour';
+
+			if ( $expire_hours > 1 ) {
+				$strtotime = '+' . $expire_hours . ' hours';
+			}
+			
+			// If browser information already exists, then update it
+			if ( $this->browser_info_exists( $browser, $ip_address ) ) {
+				$wpdb->update(
+					$table_name,
+					array(
+						'pin' => $pin,
+						'expires_at' => date( 'Y-m-d H:i:s', strtotime( $strtotime ) )
+					),
+					array(
+						'browser' => $browser,
+						'ip_address' => $ip_address
+					)
+				);
+
+				return;
+			}
+
+			$wpdb->insert(
+				$table_name,
+				array(
+					'browser' => $browser,
+					'ip_address' => $ip_address,
+					'pin' => $pin,
+					'expires_at' => date( 'Y-m-d H:i:s', strtotime( $strtotime ) )
+				)
+			);
+		}
+
+		/**
+		 * Check if the browser information exists
+		 */
+		public function browser_info_exists( $browser, $ip_address )
+		{
+			global $wpdb;
+
+			$table_name = $wpdb->prefix . 'pincode_browser_identification';
+
+			$browser_info = $wpdb->get_row(
+				$wpdb->prepare(
+					"SELECT * FROM $table_name WHERE browser = %s AND ip_address = %s",
+					$browser,
+					$ip_address
+				)
+			);
+
+			if ( $browser_info ) {
+				return $browser_info;
+			}
+
+			return false;
+		}
+
+		/**
+		 * Delete expired browser information
+		 */
+		public function delete_expired_browser_info()
+		{
+			global $wpdb;
+
+			$table_name = $wpdb->prefix . 'pincode_browser_identification';
+
+			// Check if the table exists
+			if ( $wpdb->get_var( "SHOW TABLES LIKE '$table_name'" ) == $table_name ) {
+				return;
+			}
+
+			$wpdb->query(
+				$wpdb->prepare(
+					"DELETE FROM $table_name WHERE expires_at < %s",
+					date( 'Y-m-d H:i:s' )
+				)
+			);
+		}
+		
+
 		public function show_admin_bar_for_admin(){
 			if (!current_user_can('manage_options')) {
     			add_filter('show_admin_bar', '__return_false');
@@ -303,6 +436,9 @@ if ( !class_exists( 'Pincode_Login' ) ) {
        public function pincode_login_check_user() {
 		   global $post;
 
+		   // Get current page id
+		   $page_id = get_queried_object_id();
+
             $protected_type = esc_attr(get_option('site_protect_level'));
 
 			$is_protected = false;
@@ -314,7 +450,7 @@ if ( !class_exists( 'Pincode_Login' ) ) {
 
 				if ( $single_protected_pages ) {
 					foreach ( $single_protected_pages as $page ) {
-						if ( $post->ID == $page->page_id ) {
+						if ( $page_id == $page->page_id ) {
 							$is_protected = true;
 							break;
 						}
@@ -322,15 +458,19 @@ if ( !class_exists( 'Pincode_Login' ) ) {
 				}
 			}
 
-			// Get pincode from cookie.
-			if ( isset( $_COOKIE['pincode'] ) ) {
-				$pincode = sanitize_text_field( $_COOKIE['pincode'] );
+			// Check if user browser information exists
+			if ( $this->browser_info_exists( $_SERVER['HTTP_USER_AGENT'], $_SERVER['REMOTE_ADDR'] ) ) {
+
+				$browser_info = $this->browser_info_exists( $_SERVER['HTTP_USER_AGENT'], $_SERVER['REMOTE_ADDR'] );
+
+				$pincode = $browser_info->pin;
 
 				if ( 'entire_site' == $protected_type && $this->site_wide_protection( $pincode, site_url( $_SERVER['REQUEST_URI'] ) ) ) {
 					return;
 				}
 
 				if ( 'protect_pages' == $protected_type && $this->protected_page( $pincode, site_url( $_SERVER['REQUEST_URI'] ) ) ) {
+					error_log( print_r( 'Protected page', true ) );
 					return;
 				}				
 			}
@@ -428,7 +568,7 @@ if ( !class_exists( 'Pincode_Login' ) ) {
 
 				// If pin is correct for site wide protection then set cookie and redirect to the page.
 				if ( $site_wide_protection ) {
-					setcookie( 'pincode', $pincode, time() + ( 2 * 60 * 60 ), '/' );
+					$this->store_browser_info( $_SERVER['HTTP_USER_AGENT'], $_SERVER['REMOTE_ADDR'], $pincode );
 					
 					wp_send_json(
 						array(
@@ -443,8 +583,6 @@ if ( !class_exists( 'Pincode_Login' ) ) {
 
 				// Set cookie for pincode for 2 hours - t1dclinicaltrial.com
 				if ( strpos( $_POST['redirect_to'], 't1dclinicaltrial.com' ) != false ) {
-					setcookie( 'pincode', $pincode, time() + ( 2 * 60 * 60 ), '/' );
-
 					wp_send_json(
 						array(
 							'status' => 'success',
@@ -456,7 +594,7 @@ if ( !class_exists( 'Pincode_Login' ) ) {
 
 				// If pin is set for specific page and pin is correct then set cookie and refresh the page.
 				if ( $protected_page ) {
-					setcookie( 'pincode', $pincode, time() + ( 2 * 60 * 60 ), '/' );
+					$this->store_browser_info( $_SERVER['HTTP_USER_AGENT'], $_SERVER['REMOTE_ADDR'], $pincode );
 
 					wp_send_json(
 						array(
@@ -494,9 +632,10 @@ if ( !class_exists( 'Pincode_Login' ) ) {
 		 */
 		function protected_page( $pin, $redirect_to )
 		{
+			$site_protect_level = get_option( 'site_protect_level' );
 			$single_protected_pages = get_option( 'single_protected_pages' );
 
-			if ( $single_protected_pages ) {
+			if ( $site_protect_level == 'protect_pages' && $single_protected_pages ) {
 				$page_id = url_to_postid( $redirect_to );
 
 				$current_page = array();
@@ -508,7 +647,7 @@ if ( !class_exists( 'Pincode_Login' ) ) {
 					}
 				}
 				
-				if ( $current_page->page_password == $pin ) {
+				if ( isset( $current_page->page_password ) && $current_page->page_password == $pin ) {
 					return $redirect_to;
 				}
 			}
