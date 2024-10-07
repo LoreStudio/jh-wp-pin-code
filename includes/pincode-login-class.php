@@ -158,6 +158,9 @@ if ( !class_exists( 'Pincode_Login' ) ) {
 			add_filter( 'auth_cookie_expiration', [$this, 'lore_change_cookie_expire_time'], 99, 3 );
 			add_action( 'admin_init', [$this, 'subscriber_block_wp_admin'] );
 			add_filter( 'init', [$this,'show_admin_bar_for_admin'],9 );
+
+			// Exclude protected pages from WPEngine cache
+			add_action( 'template_redirect', [$this,'exclude_from_cache'] );
 			
 			//Update functions
 			add_filter( 'plugins_api', [ $this, 'update_info' ], 20, 3 );
@@ -296,11 +299,37 @@ if ( !class_exists( 'Pincode_Login' ) ) {
 				$strtotime = '+' . $expire_hours . ' hours';
 			}
 
-			// Purge varnish cache
-			if ( function_exists( 'wpecommon::purge_varnish_cache' ) ) {
-				wpecommon::purge_varnish_cache();
-			}
-			
+			/**
+			 * Purge varnish cache.
+			 *
+			 * Disabled this first conditional and method call
+			 * in favor of exclude_from_cache method. As is, this
+			 * call would clear ALL cache on WPE, not just the
+			 * current page.
+			 *
+			 * I've also added and commented out an updated version
+			 * of this call if we wanted to use it that does
+			 * more thorough cache clearing. But this is also site
+			 * wide and even this more thorough approach did not work.
+			 *
+			 * So if needed, I'd focus on refining the exclude_page_cache
+			 * method.
+			 * */
+			// if ( function_exists( 'wpecommon::purge_varnish_cache' ) ) {
+			// 	wpecommon::purge_varnish_cache();
+			// }
+			// if ( class_exists( 'WpeCommon' ) ) {
+			// 	if ( method_exists( 'WpeCommon', 'purge_memcached' ) ) {
+			// 		WpeCommon::purge_memcached();
+			// 	}
+			// 	if ( method_exists( 'WpeCommon', 'clear_maxcdn_cache' ) ) {
+			// 		WpeCommon::clear_maxcdn_cache();
+			// 	}
+			// 	if ( method_exists( 'WpeCommon', 'purge_varnish_cache' ) ) {
+			// 		WpeCommon::purge_varnish_cache();
+			// 	}
+			// }
+
 			// If browser information already exists, then update it
 			if ( $this->browser_info_exists( $browser, $ip_address ) ) {
 				$wpdb->update(
@@ -579,7 +608,7 @@ if ( !class_exists( 'Pincode_Login' ) ) {
 						array(
 							'status' => 'success',
 							'message' => __('Successfully Logged in'),
-							'redirect_to' => $t1d_pins != false ?  $t1d_pins . '?pin=' . $pincode : $_POST['redirect_to']
+							'redirect_to' => $t1d_pins != false ? $t1d_pins . '?pin=' . $pincode : $_POST['redirect_to'],
 						)
 					);
 
@@ -600,7 +629,6 @@ if ( !class_exists( 'Pincode_Login' ) ) {
 				// If pin is set for specific page and pin is correct then set cookie and refresh the page.
 				if ( $protected_page ) {
 					$this->store_browser_info( $_SERVER['HTTP_USER_AGENT'], $_SERVER['REMOTE_ADDR'], $pincode );
-
 					wp_send_json(
 						array(
 							'status' => 'success',
@@ -651,7 +679,7 @@ if ( !class_exists( 'Pincode_Login' ) ) {
 						break;
 					}
 				}
-				
+
 				if ( isset( $current_page->page_password ) && $current_page->page_password == $pin ) {
 					return $redirect_to;
 				}
@@ -836,6 +864,49 @@ if ( !class_exists( 'Pincode_Login' ) ) {
 		    		delete_transient( $this->cache_key );
 			}		
 		}	
+
+		/**
+		 * Exclude protected pages from WP Engine cache.
+		 *
+		 * This function tries to enforce clearing of cache on
+		 * pin-protected pages, especially on WPEngine.
+		 *
+		 * (a) adds headers to prevent caching
+		 * (b) sets a cookie with a wordpress_ value
+		 * (c) adding a query parameter
+		 *
+		 * For more on WPEngine caching including wordpress_
+		 * cookies, see: https://wpengine.com/support/cache/
+		 */
+		public function exclude_from_cache() {
+			$current_page_id = get_queried_object_id();
+			$single_protected_pages = get_option( 'single_protected_pages' );
+			if ( $single_protected_pages ) {
+				foreach ( $single_protected_pages as $page ) {
+					if ( $current_page_id == $page->page_id ) {
+						// Add cache-related headers
+						if ( ! headers_sent() ) {
+							header( 'Cache-Control: no-store, no-cache, must-revalidate, max-age=0' );
+							header( 'Cache-Control: post-check=0, pre-check=0', false );
+							header( 'Pragma: no-cache' );
+						}
+
+						// Set the cookie to prevent caching
+						$page_url = get_permalink( $current_page_id );
+						$relative_url = wp_make_link_relative( $page_url );
+						setcookie( 'wordpress_nocache', 'true', time() + 3600, $relative_url );
+
+						// Add query parameter to prevent caching
+						if ( ! isset($_GET['key']) ) {
+							$new_url = add_query_arg('key', time(), $page_url);
+							wp_safe_redirect( $new_url );
+							exit;
+						}
+					}
+				}
+			}
+		}
+
 	
  } // end of Class
 	

@@ -6,7 +6,7 @@
 
  *	Description: An easy to use pin code plugin to access the full site.
 
- *	Version: 3.6
+ *	Version: 3.6.1
  */
 
 if ( ! defined( 'ABSPATH' ) ) {
